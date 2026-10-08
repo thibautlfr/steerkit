@@ -18,6 +18,16 @@ importers:
         specifier: ~6.0.2
         version: 6.0.3
 
+  apps/docs:
+    dependencies:
+      steerkit:
+        specifier: workspace:*
+        version: link:../../packages/steerkit
+    devDependencies:
+      vite:
+        specifier: ~8.3.3
+        version: 8.3.3(@types/node@24.19.1)(yaml@2.9.1)
+
   packages/steerkit:
     devDependencies:
       '@arethetypeswrong/cli':

@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<meta
+			name="description"
+			content="Craig Reynolds' steering behaviors for autonomous characters: interactive demos of the steerkit library."
+		/>
+		<title>steerkit · steering behaviors</title>
+		<link rel="stylesheet" href="/src/style.css" />
+	</head>
+	<body>
+		<header class="top">
+			<a class="brand" href="#seek">steerkit</a>
+			<p class="tagline">
+				Craig Reynolds' steering behaviors, small and engine-agnostic
+			</p>
+			<nav class="links">
+				<a href="https://github.com/thibautlfr/steerkit">GitHub</a>
+				<a href="https://www.npmjs.com/package/steerkit">npm</a>
+			</nav>
+		</header>
+
+		<div class="layout">
+			<nav class="demos" aria-label="Demos">
+				<ol id="demo-list"></ol>
+			</nav>
+
+			<main>
+				<h1 id="title">Seek</h1>
+				<p id="summary" class="summary"></p>
+
+				<div class="stage">
+					<canvas id="canvas" aria-label="Demo"></canvas>
+					<ul class="legend" aria-label="Legend">
+						<li><span class="swatch velocity"></span>velocity</li>
+						<li><span class="swatch desired"></span>desired velocity</li>
+						<li><span class="swatch steering"></span>steering force</li>
+					</ul>
+					<p id="hint" class="hint"></p>
+				</div>
+
+				<div class="panel">
+					<form id="params" class="params"></form>
+					<pre class="code"><code id="code"></code></pre>
+				</div>
+			</main>
+		</div>
+
+		<script type="module" src="/src/main.ts"></script>
+	</body>
+</html>

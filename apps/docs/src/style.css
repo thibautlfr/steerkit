@@ -1,0 +1,276 @@
+:root {
+	--bg: #f7f6f2;
+	--surface: #ffffff;
+	--text: #1d1f24;
+	--muted: #5f6470;
+	--border: #e2e0d8;
+	--accent: #3a5bd9;
+	--agent: #1d1f24;
+	--velocity: #2f6fde;
+	--desired: #1f9d6b;
+	--steering: #e0582b;
+	--target: #b83280;
+	--zone: rgba(184, 50, 128, 0.08);
+	--trail: rgba(29, 31, 36, 0.12);
+	--code-bg: #f0eee7;
+	color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root {
+		--bg: #15171c;
+		--surface: #1c1f26;
+		--text: #e8e6e1;
+		--muted: #a0a4ae;
+		--border: #2c3039;
+		--accent: #8aa2ff;
+		--agent: #e8e6e1;
+		--velocity: #6b9cff;
+		--desired: #4cc995;
+		--steering: #ff8a5c;
+		--target: #f075b6;
+		--zone: rgba(240, 117, 182, 0.1);
+		--trail: rgba(232, 230, 225, 0.14);
+		--code-bg: #23262e;
+		color-scheme: dark;
+	}
+}
+
+* {
+	box-sizing: border-box;
+}
+
+body {
+	margin: 0;
+	background: var(--bg);
+	color: var(--text);
+	font:
+		16px / 1.5 system-ui,
+		-apple-system,
+		"Segoe UI",
+		sans-serif;
+}
+
+a {
+	color: var(--accent);
+}
+
+.top {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	gap: 0.25rem 1rem;
+	padding: 1rem 1.5rem;
+	border-bottom: 1px solid var(--border);
+}
+
+.brand {
+	font-weight: 700;
+	font-size: 1.25rem;
+	color: var(--text);
+	text-decoration: none;
+}
+
+.tagline {
+	margin: 0;
+	color: var(--muted);
+	flex: 1;
+}
+
+.links {
+	display: flex;
+	gap: 1rem;
+}
+
+.layout {
+	display: grid;
+	grid-template-columns: 13rem minmax(0, 1fr);
+	gap: 2rem;
+	max-width: 76rem;
+	margin: 0 auto;
+	padding: 1.5rem;
+}
+
+.demos ol {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	position: sticky;
+	top: 1.5rem;
+}
+
+.demos a {
+	display: block;
+	padding: 0.4rem 0.75rem;
+	border-radius: 0.5rem;
+	color: var(--muted);
+	text-decoration: none;
+}
+
+.demos a:hover {
+	color: var(--text);
+}
+
+.demos a[aria-current="page"] {
+	background: var(--surface);
+	color: var(--text);
+	font-weight: 600;
+	box-shadow: inset 0 0 0 1px var(--border);
+}
+
+h1 {
+	margin: 0 0 0.5rem;
+	font-size: 1.75rem;
+}
+
+.summary {
+	margin: 0 0 1.25rem;
+	color: var(--muted);
+	max-width: 46rem;
+}
+
+.stage {
+	position: relative;
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: 0.75rem;
+	overflow: hidden;
+}
+
+canvas {
+	display: block;
+	width: 100%;
+	aspect-ratio: 16 / 9;
+	touch-action: none;
+	cursor: crosshair;
+}
+
+.legend {
+	position: absolute;
+	top: 0.75rem;
+	left: 0.75rem;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.25rem 0.9rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	font-size: 0.8rem;
+	color: var(--muted);
+	pointer-events: none;
+}
+
+.swatch {
+	display: inline-block;
+	width: 0.9rem;
+	height: 3px;
+	margin-right: 0.35rem;
+	vertical-align: middle;
+	border-radius: 2px;
+}
+
+.swatch.velocity {
+	background: var(--velocity);
+}
+
+.swatch.desired {
+	background: var(--desired);
+}
+
+.swatch.steering {
+	background: var(--steering);
+}
+
+.hint {
+	position: absolute;
+	right: 0.75rem;
+	bottom: 0.5rem;
+	margin: 0;
+	font-size: 0.8rem;
+	color: var(--muted);
+	pointer-events: none;
+}
+
+.panel {
+	display: grid;
+	grid-template-columns: minmax(0, 18rem) minmax(0, 1fr);
+	gap: 1.5rem;
+	margin-top: 1.25rem;
+}
+
+.params {
+	display: grid;
+	gap: 0.9rem;
+	align-content: start;
+}
+
+.param {
+	display: grid;
+	grid-template-columns: 1fr auto;
+	gap: 0.15rem 0.5rem;
+	font-size: 0.9rem;
+}
+
+.param output {
+	font-variant-numeric: tabular-nums;
+	color: var(--muted);
+}
+
+.param input[type="range"] {
+	grid-column: 1 / -1;
+	width: 100%;
+	accent-color: var(--accent);
+}
+
+.param select {
+	grid-column: 1 / -1;
+	font: inherit;
+	padding: 0.3rem;
+}
+
+.code {
+	margin: 0;
+	padding: 1rem 1.25rem;
+	background: var(--code-bg);
+	border-radius: 0.75rem;
+	overflow-x: auto;
+	font:
+		0.85rem / 1.55 ui-monospace,
+		"SF Mono",
+		Menlo,
+		Consolas,
+		monospace;
+	tab-size: 2;
+}
+
+@media (max-width: 52rem) {
+	.top {
+		padding: 1rem;
+	}
+
+	.tagline {
+		order: 3;
+		flex-basis: 100%;
+	}
+
+	.layout {
+		grid-template-columns: minmax(0, 1fr);
+		gap: 1rem;
+		padding: 1rem;
+	}
+
+	.demos ol {
+		position: static;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.25rem;
+	}
+
+	.panel {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	canvas {
+		aspect-ratio: 4 / 3;
+	}
+}

@@ -1,0 +1,17 @@
+{
+	"name": "docs",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "vite",
+		"build": "tsc && vite build",
+		"preview": "vite preview",
+		"typecheck": "tsc"
+	},
+	"dependencies": {
+		"steerkit": "workspace:*"
+	},
+	"devDependencies": {
+		"vite": "~8.3.3"
+	}
+}
