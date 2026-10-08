@@ -39,7 +39,7 @@
 		"build": "tsdown",
 		"typecheck": "tsc",
 		"test": "vitest run",
-		"bench": "vitest bench --run",
+		"bench": "node bench/crowd.ts",
 		"size": "size-limit",
 		"check:package": "publint && attw --pack . --profile esm-only"
 	},
