@@ -1,0 +1,58 @@
+{
+	"name": "steerkit",
+	"version": "0.0.0",
+	"description": "Craig Reynolds' steering behaviors for autonomous characters: small, typed, engine-agnostic, allocation-free.",
+	"keywords": [
+		"steering",
+		"steering-behaviors",
+		"reynolds",
+		"boids",
+		"autonomous-agents",
+		"ai",
+		"gamedev",
+		"threejs"
+	],
+	"license": "MIT",
+	"author": "Thibaut Lefrançois",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/thibautlfr/steerkit.git",
+		"directory": "packages/steerkit"
+	},
+	"homepage": "https://github.com/thibautlfr/steerkit#readme",
+	"bugs": "https://github.com/thibautlfr/steerkit/issues",
+	"type": "module",
+	"sideEffects": false,
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"default": "./dist/index.js"
+		},
+		"./package.json": "./package.json"
+	},
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "tsdown",
+		"typecheck": "tsc",
+		"test": "vitest run",
+		"bench": "vitest bench --run",
+		"size": "size-limit",
+		"check:package": "publint && attw --pack . --profile esm-only"
+	},
+	"devDependencies": {
+		"@arethetypeswrong/cli": "^0.18.5",
+		"@size-limit/preset-small-lib": "~14.1.0",
+		"@types/node": "^24.0.0",
+		"@types/three": "^0.186.0",
+		"fast-check": "^4.10.2",
+		"publint": "^0.3.25",
+		"size-limit": "~14.1.0",
+		"three": "^0.186.1",
+		"tsdown": "^0.23.0",
+		"vitest": "^5.0.3"
+	}
+}
