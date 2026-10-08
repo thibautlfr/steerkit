@@ -41,7 +41,8 @@
 		"test": "vitest run",
 		"bench": "node bench/crowd.ts",
 		"size": "size-limit",
-		"check:package": "publint && attw --pack . --profile esm-only"
+		"check:package": "publint && attw --pack . --profile esm-only",
+		"prepack": "cp ../../README.md ../../LICENSE ."
 	},
 	"devDependencies": {
 		"@arethetypeswrong/cli": "^0.18.5",
@@ -54,5 +55,25 @@
 		"three": "^0.186.1",
 		"tsdown": "^0.23.0",
 		"vitest": "^5.0.3"
-	}
+	},
+	"size-limit": [
+		{
+			"name": "everything",
+			"path": "dist/index.js",
+			"import": "*",
+			"limit": "1.6 kB"
+		},
+		{
+			"name": "seek alone",
+			"path": "dist/index.js",
+			"import": "{ seek }",
+			"limit": "200 B"
+		},
+		{
+			"name": "a typical frame (arrive, keepAway, blend, step)",
+			"path": "dist/index.js",
+			"import": "{ arrive, keepAway, blend, step }",
+			"limit": "650 B"
+		}
+	]
 }
