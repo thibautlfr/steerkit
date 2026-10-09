@@ -5,6 +5,7 @@ import { evadeDemo, pursueDemo } from "./demos/prediction.ts";
 import { speedLimitDemo } from "./demos/speed-limit.ts";
 import { wanderDemo } from "./demos/wander.ts";
 import { highlight } from "./highlight.ts";
+import { home, SITE } from "./pages.ts";
 import { Stage } from "./stage.ts";
 
 const demos: Demo[] = [
@@ -33,14 +34,35 @@ const form = element<HTMLFormElement>("params");
 const code = element("code");
 const stage = new Stage(element<HTMLCanvasElement>("canvas"));
 
-for (const demo of demos) {
-	const item = document.createElement("li");
-	const link = document.createElement("a");
-	link.href = `#${demo.id}`;
-	link.textContent = demo.title;
-	item.append(link);
-	list.append(item);
-}
+// The demo in the address (/arrive/), or the first one on the home page
+const current = (): { demo: Demo; isHome: boolean } => {
+	const id = location.pathname.split("/").filter(Boolean)[0];
+	const demo = demos.find((d) => d.id === id);
+	return demo ? { demo, isHome: false } : { demo: seekDemo, isHome: true };
+};
+
+// Links from before the site had one page per demo (/#arrive)
+const legacy = demos.find((d) => `#${d.id}` === location.hash);
+if (legacy) history.replaceState(null, "", `/${legacy.id}/`);
+
+// The head of the page, prerendered at build time, kept in step when
+// navigating between demos without reloading
+const setMeta = (selector: string, attribute: string, value: string) => {
+	document.querySelector(selector)?.setAttribute(attribute, value);
+};
+const updateHead = (demo: Demo, isHome: boolean) => {
+	const pageTitle = isHome
+		? home.title
+		: `${demo.title}, interactive demo · steerkit`;
+	const description = isHome ? home.description : demo.description;
+	const url = isHome ? `${SITE}/` : `${SITE}/${demo.id}/`;
+	document.title = pageTitle;
+	setMeta('meta[name="description"]', "content", description);
+	setMeta('link[rel="canonical"]', "href", url);
+	setMeta('meta[property="og:title"]', "content", pageTitle);
+	setMeta('meta[property="og:description"]', "content", description);
+	setMeta('meta[property="og:url"]', "content", url);
+};
 
 // A slider, or a select for a choice, writing into `values`
 const control = (param: Param, values: Values, onChange: () => void) => {
@@ -80,22 +102,24 @@ const control = (param: Param, values: Values, onChange: () => void) => {
 	return label;
 };
 
+let values: Values = {};
+let shown: Demo = seekDemo;
+
 const show = () => {
-	const id = location.hash.slice(1);
-	const demo = demos.find((d) => d.id === id) ?? seekDemo;
+	const { demo, isHome } = current();
+	shown = demo;
 
 	for (const link of list.querySelectorAll("a")) {
-		if (link.hash === `#${demo.id}`) link.setAttribute("aria-current", "page");
-		else link.removeAttribute("aria-current");
+		if (link.pathname === `/${demo.id}/`) {
+			link.setAttribute("aria-current", "page");
+		} else link.removeAttribute("aria-current");
 	}
 	title.textContent = demo.title;
 	summary.textContent = demo.summary;
 	hint.textContent = demo.hint;
-	document.title = `${demo.title} · steerkit`;
+	updateHead(demo, isHome);
 
-	const values: Values = Object.fromEntries(
-		demo.params.map((p) => [p.key, p.value]),
-	);
+	values = Object.fromEntries(demo.params.map((p) => [p.key, p.value]));
 	const render = () => {
 		code.innerHTML = highlight(demo.code(values));
 	};
@@ -104,8 +128,73 @@ const show = () => {
 	stage.play(demo.create(stage.world), values);
 };
 
-window.addEventListener("hashchange", show);
+// Moving between demos without reloading the page
+document.addEventListener("click", (event) => {
+	const link = (event.target as Element).closest?.("a");
+	const internal =
+		link?.origin === location.origin &&
+		(link.pathname === "/" || demos.some((d) => link.pathname === `/${d.id}/`));
+	if (
+		!link ||
+		!internal ||
+		event.metaKey ||
+		event.ctrlKey ||
+		event.shiftKey ||
+		event.button !== 0
+	) {
+		return;
+	}
+	event.preventDefault();
+	if (link.pathname !== location.pathname) {
+		history.pushState(null, "", link.pathname);
+		show();
+		window.scrollTo({ top: 0 });
+	}
+});
+window.addEventListener("popstate", show);
 show();
+
+// Copying the snippet, or a prompt that asks a coding agent to bring the
+// demo's behavior into the reader's own project
+const copied = element("copied");
+let copiedTimer = 0;
+const copy = async (text: string, what: string) => {
+	try {
+		await navigator.clipboard.writeText(text);
+		copied.textContent = `${what} copied`;
+	} catch {
+		copied.textContent = "Copy failed: select the code instead";
+	}
+	clearTimeout(copiedTimer);
+	copiedTimer = window.setTimeout(() => {
+		copied.textContent = "";
+	}, 2000);
+};
+
+const prompt = (
+	demo: Demo,
+): string => `I want to use steerkit (the npm package "steerkit") in this project: Craig Reynolds' steering behaviors as small, typed functions that work on the project's own { x, y, z } vectors, THREE.Vector3 included.
+
+Goal: ${demo.goal}.
+
+1. Read the steerkit documentation for coding agents first: ${SITE}/llms.txt
+2. Look at how this project moves its characters: the update loop, the entities, their vector type, the scale of the world and the frame delta. If it's unclear which entities this is for, ask me before changing code.
+3. Add steerkit with the project's package manager and wire it in following the documentation: output vectors created once and reused, dt in seconds and clamped, step called once per agent per frame.
+4. Scale maxSpeed, maxForce and distances to the project's units, keep the change small and readable, and tell me what you changed.
+
+Starting point, from the ${demo.title} demo (${SITE}/${demo.id}/), with the values I picked there (the demo's world is about 10 units tall):
+
+\`\`\`ts
+${demo.code(values)}
+\`\`\`
+`;
+
+element("copy-code").addEventListener("click", () =>
+	copy(shown.code(values), "Code"),
+);
+element("copy-prompt").addEventListener("click", () =>
+	copy(prompt(shown), "Prompt"),
+);
 
 // Hiding the vectors, to watch the motion alone; remembered across visits
 const toggle = element<HTMLButtonElement>("vectors");

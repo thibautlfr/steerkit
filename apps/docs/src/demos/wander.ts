@@ -8,12 +8,10 @@ import {
 } from "steerkit";
 import { agentCode, agentParams, type Demo, n, vec, wrap } from "../demo.ts";
 import { Trail } from "../draw.ts";
+import { page } from "../pages.ts";
 
 export const wanderDemo: Demo = {
-	id: "wander",
-	title: "Wander",
-	summary:
-		"A random walk that looks natural. The agent seeks a point on a circle ahead of it (dashed), and that point drifts a little at random every frame, so the heading changes in smooth curves instead of trembling. A larger radius turns sharper, a longer distance smoother, a higher jitter more often. In 3D, the circle is a sphere; here it's kept in the xy plane.",
+	...page("wander"),
 	hint: "Tweak the circle with the sliders",
 	params: [
 		...agentParams(2.5, 3),

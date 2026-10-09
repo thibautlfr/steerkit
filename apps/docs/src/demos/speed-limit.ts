@@ -1,5 +1,6 @@
 import { type Agent, seek, step, type Vec3 } from "steerkit";
 import { type Demo, n, vec } from "../demo.ts";
+import { page } from "../pages.ts";
 
 // Seconds of speed history in the chart
 const HISTORY = 6;
@@ -13,10 +14,7 @@ type Runner = {
 };
 
 export const speedLimitDemo: Demo = {
-	id: "speed-limit",
-	title: "Speed limit",
-	summary:
-		"Every few seconds, a boost raises maxSpeed, then it drops back. Reynolds' limit (top lane, in blue on the chart) cuts the extra speed in a single frame: the agent stops dead. With overspeedDamping (bottom lane, in orange), the extra speed fades out over that many seconds instead, the same at any framerate.",
+	...page("speed-limit"),
 	hint: "The chart shows both speeds over time",
 	params: [
 		{

@@ -11,6 +11,7 @@ import {
 } from "steerkit";
 import { agentCode, type Demo, n, vec } from "../demo.ts";
 import { type Draw, Trail } from "../draw.ts";
+import { page } from "../pages.ts";
 
 // Where steerkit predicts `other` will be, for drawing (the same formula as
 // pursue and evade)
@@ -37,10 +38,7 @@ const drawPrediction = (d: Draw, from: Vec3, to: Vec3) => {
 };
 
 export const pursueDemo: Demo = {
-	id: "pursue",
-	title: "Pursue",
-	summary:
-		"Seek where the quarry will be, not where it is. The prediction looks ahead by the time the two would take to meet head-on, capped by maxPrediction: far away, the hunter aims well ahead; close up, right at the quarry. Switch to seek to see it trail behind instead.",
+	...page("pursue"),
 	hint: "The quarry follows the pointer",
 	params: [
 		{ key: "mode", label: "hunter", value: 0, options: ["pursue", "seek"] },
@@ -122,10 +120,7 @@ export const pursueDemo: Demo = {
 };
 
 export const evadeDemo: Demo = {
-	id: "evade",
-	title: "Evade",
-	summary:
-		"Flee where the threat will be: an agent in the path of a moving threat dodges sideways, out of its way, rather than straight back. Here the pointer is the threat, and each agent blends evade with arrive back home. Like flee, evade pushes at full strength however far the threat is, so the crowd leans away from the pointer all the time; sweep it fast across the ring to see the dodge.",
+	...page("evade"),
 	hint: "Sweep the pointer across the crowd",
 	params: [
 		{

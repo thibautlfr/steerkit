@@ -359,11 +359,72 @@ canvas {
 	padding: 0.3rem;
 }
 
+.code-box {
+	min-width: 0;
+	border-radius: 0.75rem;
+	background: var(--code-bg);
+	overflow: hidden;
+}
+
+.code-bar {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	padding: 0.5rem 0.6rem 0.5rem 1.25rem;
+	border-bottom: 1px solid var(--border);
+	font-size: 0.8rem;
+	color: var(--muted);
+}
+
+.code-label {
+	flex: 1;
+}
+
+.copied {
+	color: var(--desired);
+}
+
+.copy {
+	padding: 0.3rem 0.65rem;
+	border: 1px solid var(--border);
+	border-radius: 0.4rem;
+	background: var(--surface);
+	color: var(--text);
+	font: inherit;
+	cursor: pointer;
+}
+
+.copy:hover {
+	border-color: var(--muted);
+}
+
+.copy.primary {
+	border-color: var(--accent);
+	background: var(--accent);
+	color: var(--surface);
+	font-weight: 600;
+}
+
+.copy.primary:hover {
+	filter: brightness(1.1);
+}
+
+.foot {
+	max-width: 76rem;
+	margin: 1rem auto 0;
+	padding: 1.5rem;
+	border-top: 1px solid var(--border);
+	font-size: 0.85rem;
+	color: var(--muted);
+}
+
+.foot p {
+	margin: 0;
+}
+
 .code {
 	margin: 0;
 	padding: 1rem 1.25rem;
-	background: var(--code-bg);
-	border-radius: 0.75rem;
 	overflow-x: auto;
 	font:
 		0.85rem / 1.55 ui-monospace,

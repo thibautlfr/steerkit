@@ -6,12 +6,15 @@
 		"dev": "vite",
 		"build": "tsc && vite build",
 		"preview": "vite preview",
-		"typecheck": "tsc"
+		"typecheck": "tsc",
+		"images": "sh images/render.sh"
 	},
 	"dependencies": {
 		"steerkit": "workspace:*"
 	},
 	"devDependencies": {
+		"@types/node": "^24.0.0",
+		"typescript": "~6.0.2",
 		"vite": "~8.3.3"
 	}
 }

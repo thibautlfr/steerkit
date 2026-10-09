@@ -10,6 +10,7 @@ import {
 } from "steerkit";
 import { agentCode, agentParams, type Demo, n, vec, wrap } from "../demo.ts";
 import { Trail } from "../draw.ts";
+import { page } from "../pages.ts";
 
 const makeAgent = (x: number, y: number): Agent => ({
 	position: vec(x, y),
@@ -19,10 +20,7 @@ const makeAgent = (x: number, y: number): Agent => ({
 });
 
 export const seekDemo: Demo = {
-	id: "seek",
-	title: "Seek",
-	summary:
-		"Full speed toward a target. The steering force (orange) is the velocity the agent wants (green: straight at the target, at maxSpeed) minus the velocity it has (blue): Reynolds' whole model in one subtraction. With nothing to slow it down, seek overshoots and circles back; that's what arrive is for.",
+	...page("seek"),
 	hint: "Move the pointer to set the target",
 	params: agentParams(),
 	code: (v) =>
@@ -50,10 +48,7 @@ export const seekDemo: Demo = {
 };
 
 export const fleeDemo: Demo = {
-	id: "flee",
-	title: "Flee",
-	summary:
-		"Seek's opposite: full speed away from a point, however far it is. Here the agent wraps around the edges, or it would run away for good; keepAway is the version that only cares within a radius.",
+	...page("flee"),
 	hint: "Chase the agent with the pointer",
 	params: agentParams(),
 	code: (v) =>
@@ -82,10 +77,7 @@ export const fleeDemo: Demo = {
 };
 
 export const arriveDemo: Demo = {
-	id: "arrive",
-	title: "Arrive",
-	summary:
-		"Seek that slows down: within slowingDistance of the target (the dashed circle), the desired speed drops in proportion to the distance left, down to a stop on the target itself. Set slowingDistance to 0 and it seeks again, overshoot included.",
+	...page("arrive"),
 	hint: "Move the pointer to set the target",
 	params: [
 		...agentParams(),
@@ -132,10 +124,7 @@ export const arriveDemo: Demo = {
 };
 
 export const keepAwayDemo: Demo = {
-	id: "keep-away",
-	title: "Keep away",
-	summary:
-		"Flee, but only within a radius, and harder the closer the threat gets: the force fades to nothing at the edge, so entering the zone doesn't jolt. A personal space around a point. Each agent here blends it with arrive, back to its own spot.",
+	...page("keep-away"),
 	hint: "Move the pointer through the crowd",
 	params: [
 		...agentParams(3, 6),

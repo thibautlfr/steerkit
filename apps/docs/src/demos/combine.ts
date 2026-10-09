@@ -12,6 +12,7 @@ import {
 } from "steerkit";
 import { type Demo, n, vec } from "../demo.ts";
 import { Trail } from "../draw.ts";
+import { page } from "../pages.ts";
 
 type Fairy = {
 	agent: Agent;
@@ -24,10 +25,7 @@ type Fairy = {
 };
 
 export const combineDemo: Demo = {
-	id: "combine",
-	title: "Combining",
-	summary:
-		"Fairies that wander around the center and keep away from the pointer: three behaviors, one force. blend sums them by weight, so a strong pull home can cancel a flight from danger. prioritize spends a budget (maxForce) in order: keepAway first takes what it needs, then arrive, then wander gets what's left, or nothing.",
+	...page("combine"),
 	hint: "Chase the fairies with the pointer",
 	params: [
 		{

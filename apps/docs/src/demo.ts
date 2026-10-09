@@ -1,5 +1,6 @@
 import type { Vec3 } from "steerkit";
 import type { Draw } from "./draw.ts";
+import type { Page } from "./pages.ts";
 
 /** A slider, or a choice when `options` is given. */
 export type Param = {
@@ -32,10 +33,7 @@ export type Scene = {
 	draw: (draw: Draw, values: Values, world: World) => void;
 };
 
-export type Demo = {
-	id: string;
-	title: string;
-	summary: string;
+export type Demo = Page & {
 	hint: string;
 	params: Param[];
 	/** The calls this demo makes, with the current values. */
