@@ -122,7 +122,8 @@ seconds, like `dt`.
 `blend` sums forces by weight: simple, but opposed forces can cancel out (an
 agent stuck between its target and a threat). `prioritize` spends a budget
 in order: the first force takes what it needs, the next ones share what's
-left.
+left. What's left can still point against the first force: give walls and
+obstacles enough weight to fill the budget when they act.
 
 ```ts
 prioritize(force, fairy.maxForce,

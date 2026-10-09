@@ -77,7 +77,7 @@ updateGrid(grid, school);
 school.forEach((f, i) => {
 	const neighbors = queryGrid(grid, f.position, ${radius}, near);${fear}
 	const force = zero(forces[i]);
-	addWithin(force, f.maxForce, stayWithin(f, tank, { margin: 1, lookAhead: 1 }, tmp));
+	addWithin(force, f.maxForce, stayWithin(f, tank, { margin: 1, lookAhead: 1 }, tmp), 2);
 	addWithin(force, f.maxForce, avoidObstacles(f, rocks, { radius: 0.3, lookAhead: 1 }, tmp), 3);${shark}
 	addWithin(force, f.maxForce, separation(f, neighbors, { radius: ${n((v.radius ?? 0) / 2)} }, tmp), ${n(v.separation ?? 0)});
 	addWithin(force, f.maxForce, alignment(f, neighbors, sight, tmp), ${n(v.alignment ?? 0)});

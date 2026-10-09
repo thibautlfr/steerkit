@@ -267,7 +267,10 @@ export const play = (canvas: HTMLCanvasElement, values: Values): Player => {
 			const budget = one.maxForce;
 			const neighbors = queryGrid(grid, one.position, around.radius, near);
 			zero(force);
-			addWithin(force, budget, stayWithin(one, tank, walls, tmp));
+			// Weighted, so the walls take most of the budget when they act: a
+			// later force can still pull against an earlier one with what's
+			// left, and fear did, sending fish through the glass
+			addWithin(force, budget, stayWithin(one, tank, walls, tmp), 2);
 			addWithin(force, budget, avoidObstacles(one, rocks, ahead, tmp), 3);
 			if (predator) {
 				addWithin(
