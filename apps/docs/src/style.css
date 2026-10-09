@@ -284,6 +284,34 @@ canvas {
 	background: var(--steering);
 }
 
+.toggle {
+	position: absolute;
+	top: 0.5rem;
+	right: 0.5rem;
+	padding: 0.3rem 0.65rem;
+	border: 1px solid var(--border);
+	border-radius: 0.4rem;
+	background: var(--surface);
+	color: var(--muted);
+	font: inherit;
+	font-size: 0.8rem;
+	cursor: pointer;
+}
+
+.toggle:hover {
+	color: var(--text);
+	border-color: var(--muted);
+}
+
+.toggle[aria-pressed="false"] {
+	color: var(--accent);
+	border-color: var(--accent);
+}
+
+.legend[hidden] {
+	display: none;
+}
+
 .hint {
 	position: absolute;
 	right: 0.75rem;

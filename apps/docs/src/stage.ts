@@ -49,6 +49,11 @@ export class Stage {
 		});
 	}
 
+	/** Shows or hides the velocity and force vectors. */
+	set vectors(show: boolean) {
+		this.draw.showVectors = show;
+	}
+
 	/** Plays `scene`, whose sliders write into `values`. */
 	play(scene: Scene, values: Values) {
 		this.scene = scene;

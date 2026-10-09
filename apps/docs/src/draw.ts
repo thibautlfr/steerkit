@@ -37,6 +37,8 @@ export class Draw {
 	readonly ctx: CanvasRenderingContext2D;
 	/** Pixels per world unit. */
 	scale = 1;
+	/** Whether {@link vectors} draws anything, to watch the motion alone. */
+	showVectors = true;
 
 	constructor(ctx: CanvasRenderingContext2D) {
 		this.ctx = ctx;
@@ -147,6 +149,7 @@ export class Draw {
 	 * force), and the steering force between their tips.
 	 */
 	vectors(agent: Agent, force: Vec3) {
+		if (!this.showVectors) return;
 		const { position: p, velocity: v } = agent;
 		const k = VECTOR_SECONDS;
 		const velocityTip = { x: p.x + v.x * k, y: p.y + v.y * k, z: 0 };

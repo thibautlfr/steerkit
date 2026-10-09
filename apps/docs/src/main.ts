@@ -107,6 +107,38 @@ const show = () => {
 window.addEventListener("hashchange", show);
 show();
 
+// Hiding the vectors, to watch the motion alone; remembered across visits
+const toggle = element<HTMLButtonElement>("vectors");
+const legend = document.querySelector<HTMLElement>(".legend");
+const showVectors = (on: boolean) => {
+	stage.vectors = on;
+	toggle.setAttribute("aria-pressed", String(on));
+	toggle.textContent = on ? "Hide forces" : "Show forces";
+	if (legend) legend.hidden = !on;
+	try {
+		localStorage.setItem("steerkit:vectors", on ? "on" : "off");
+	} catch {}
+};
+let stored: string | null = null;
+try {
+	stored = localStorage.getItem("steerkit:vectors");
+} catch {}
+showVectors(stored !== "off");
+toggle.addEventListener("click", () =>
+	showVectors(toggle.getAttribute("aria-pressed") !== "true"),
+);
+window.addEventListener("keydown", (event) => {
+	const typing = event.target instanceof HTMLInputElement;
+	if (
+		event.key.toLowerCase() === "v" &&
+		!typing &&
+		!event.metaKey &&
+		!event.ctrlKey
+	) {
+		showVectors(toggle.getAttribute("aria-pressed") !== "true");
+	}
+});
+
 // The star count on the GitHub button, when the API answers (it allows 60
 // unauthenticated requests an hour per visitor)
 const stars = element("stars");
