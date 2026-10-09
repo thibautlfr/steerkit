@@ -98,25 +98,8 @@ Versions and the changelog come from [Changesets](https://github.com/changesets/
    `pnpm changeset`, then pick the bump and describe the change.
 2. When `develop` is merged into `main`, the release workflow opens a
    "chore: release" pull request: version bump and `CHANGELOG.md`.
-3. Merging that pull request publishes to npm, with provenance, through npm
-   trusted publishing (no token).
+3. Merging that pull request publishes the new version to npm, with
+   provenance, through npm trusted publishing (no token), once the
+   maintainer approves the run in the `npm` environment.
 
-**The first publish** is done by hand, since trusted publishing is set up
-from the package's settings on npmjs.com, once the package exists. Merge the
-"chore: release" pull request (0.1.0 and its CHANGELOG); the workflow's
-publish step then fails for lack of npm credentials, which is expected. From
-an up-to-date `main`:
-
-```sh
-pnpm install
-pnpm -F steerkit build
-cd packages/steerkit
-npm pack            # try the tarball in a real project first
-npm publish
-```
-
-Then, on npmjs.com, add `thibautlfr/steerkit` and `release.yml` as the
-package's trusted publisher: later releases publish themselves. The release
-workflow also needs "Allow GitHub Actions to create and approve pull
-requests" in the repository's settings, and the demos need GitHub Pages set
-to "GitHub Actions".
+Only the maintainer can merge into `main` and approve a publish.
