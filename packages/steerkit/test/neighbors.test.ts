@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
 	alignment,
 	cohesion,
+	keepAway,
 	type Mover,
 	separation,
 	type Vec3,
@@ -22,12 +23,15 @@ const expectClose = (actual: Vec3, expected: Vec3) => {
 const around = { radius: 3 };
 
 describe("separation", () => {
-	it("flees a single neighbor at full speed", () => {
-		const force = separation(agent(), [mover(vec(1, 0, 0))], around, vec());
-		expect(force).toEqual(vec(-2, 0, 0));
+	it("flees a single neighbor as keepAway flees a point", () => {
+		const a = agent({ velocity: vec(0, 1, 0) });
+		const force = separation(a, [mover(vec(1, 0, 0))], around, vec());
+		expectClose(force, keepAway(a, vec(1, 0, 0), around, vec()));
+		// Fleeing at full speed, 2, scaled by 1 − 1/3
+		expectClose(force, vec((-2 * 2) / 3, (-1 * 2) / 3, 0));
 	});
 
-	it("weighs each neighbor by 1/distance", () => {
+	it("weighs each neighbor by 1/distance, and fades with the nearest", () => {
 		// (−1, 0) / 1 + (0, −1) / 2: the nearer one weighs twice as much
 		const force = separation(
 			agent(),
@@ -35,8 +39,18 @@ describe("separation", () => {
 			around,
 			vec(),
 		);
-		const k = 2 / Math.sqrt(1.25);
+		const k = (2 / Math.sqrt(1.25)) * (1 - 1 / 3);
 		expectClose(force, vec(-1 * k, -0.5 * k, 0));
+	});
+
+	it("fades to nothing at the radius", () => {
+		const near = separation(agent(), [mover(vec(0.5, 0, 0))], around, vec());
+		const far = separation(agent(), [mover(vec(2.9, 0, 0))], around, vec());
+		expect(near.x).toBeLessThan(far.x);
+		expect(far.x).toBeCloseTo((-2 * 0.1) / 3, 9);
+		expect(separation(agent(), [mover(vec(3, 0, 0))], around, vec()).x).toBe(
+			-0,
+		);
 	});
 
 	it("ignores neighbors beyond the radius", () => {
@@ -62,7 +76,7 @@ describe("separation", () => {
 	it("sees all around at a stop", () => {
 		const front = { radius: 3, fieldOfView: Math.PI };
 		const force = separation(agent(), [mover(vec(-1, 0, 0))], front, vec());
-		expect(force).toEqual(vec(2, 0, 0));
+		expect(force.x).toBeGreaterThan(0);
 	});
 
 	it("sees no one with a NaN radius", () => {
@@ -77,19 +91,30 @@ describe("separation", () => {
 
 	it("takes any array-like list", () => {
 		const list = { length: 1, 0: mover(vec(1, 0, 0)) };
-		expect(separation(agent(), list, around, vec())).toEqual(vec(-2, 0, 0));
+		expect(separation(agent(), list, around, vec()).x).toBeCloseTo(-4 / 3, 9);
 	});
 });
 
 describe("cohesion", () => {
-	it("seeks the center of the neighbors", () => {
+	it("pulls toward the center of the neighbors, maxSpeed at the radius", () => {
+		// The center is (1, 1, 0); the pull is maxSpeed / radius per unit
 		const force = cohesion(
-			agent(),
+			agent({ velocity: vec(0, 0, 5) }),
 			[mover(vec(2, 0, 0)), mover(vec(0, 2, 0))],
 			around,
 			vec(),
 		);
-		expectClose(force, vec(Math.SQRT2, Math.SQRT2, 0));
+		expectClose(force, vec(2 / 3, 2 / 3, 0));
+	});
+
+	it("pulls nothing on the center itself", () => {
+		const force = cohesion(
+			agent({ velocity: vec(1, 0, 0) }),
+			[mover(vec(-1, 0, 0)), mover(vec(1, 0, 0))],
+			around,
+			vec(),
+		);
+		expect(force).toEqual(vec());
 	});
 
 	it("is zero with no neighbor in sight", () => {

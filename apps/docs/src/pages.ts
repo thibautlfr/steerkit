@@ -99,7 +99,7 @@ export const pages: Page[] = [
 		title: "Separation",
 		group: "Groups",
 		summary:
-			"Each agent steers away from the neighbors it sees, harder from the nearest: every neighbor within the radius pushes along the line between them, weighted by 1/distance. The highlighted agent shows its neighborhood: the radius, and the field of view (neighbors behind it are ignored). Here it is blended with wander; set its weight to 0 to see the crowd without it.",
+			"Each agent steers away from the neighbors it sees, harder from the nearest: every neighbor within the radius pushes along the line between them, weighted by 1/distance, and the push fades out as the nearest one nears the edge of the radius, so a neighbor coming into sight doesn't jolt. The highlighted agent shows its neighborhood: the radius, and the field of view (neighbors behind it are ignored). Here it is blended with wander; set its weight to 0 to see the crowd without it.",
 		description:
 			"Interactive demo of separation, Reynolds' boids behavior: steer away from nearby neighbors to avoid crowding. Neighborhood drawn, steerkit code.",
 		goal: "make characters keep their distance from each other in a crowd (separation), with the neighbors from the project's own list of characters",
@@ -109,7 +109,7 @@ export const pages: Page[] = [
 		title: "Cohesion",
 		group: "Groups",
 		summary:
-			"Each agent seeks the center of the neighbors it sees: what keeps a group together. On its own, cohesion clumps the agents into tight knots; flocking balances it with separation. Here it is blended with wander, so the groups keep moving.",
+			"Each agent is pulled toward the center of the neighbors it sees, harder the farther it is: none on the center itself, maxSpeed at the radius. What keeps a group together. A pull rather than a seek, so the agents don't overshoot the center and circle it: the groups travel. On its own, cohesion clumps the agents into knots; flocking balances it with separation. Here it is blended with wander, so the groups keep moving.",
 		description:
 			"Interactive demo of cohesion, Reynolds' boids behavior: steer toward the center of nearby neighbors to stay together. Live steerkit code.",
 		goal: "make characters stay together in groups (cohesion), with the neighbors from the project's own list of characters",

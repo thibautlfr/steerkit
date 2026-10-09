@@ -93,7 +93,7 @@ return. `out` may be any of the inputs.
 | `evade(agent, threat, { maxPrediction? }, out)` | Flee where a moving `threat` will be. |
 | `wander(agent, state, { radius, distance, jitter, plane? }, dt, out)` | A natural random walk; `state` comes from `createWanderState(random?)`, one per agent. |
 | `separation(agent, neighbors, { radius, fieldOfView? }, out)` | Steer away from the neighbors, harder from the nearest. |
-| `cohesion(agent, neighbors, { radius, fieldOfView? }, out)` | Steer toward the center of the neighbors. |
+| `cohesion(agent, neighbors, { radius, fieldOfView? }, out)` | Steer toward the center of the neighbors, harder the farther it is. |
 | `alignment(agent, neighbors, { radius, fieldOfView? }, out)` | Steer toward the average velocity of the neighbors. |
 | `follow(agent, leader, { distance, slowingDistance, plane? }, out)` | Follow behind a leader, and step out of its way. |
 | `offsetPursuit(agent, leader, { ahead, side, slowingDistance, plane? }, out)` | Keep a slot relative to a leader: formations. |
@@ -157,6 +157,11 @@ reacts to the neighbors it sees, within `radius` and, optionally, a
 `fieldOfView` (in radians, centered on its velocity: neighbors behind it
 are ignored). `neighbors` is any list of `{ position, velocity }`: the
 whole crowd works, the agent itself included, which they ignore.
+
+Separation fades out as keepAway does, as the nearest neighbor nears the
+edge of `radius`, and cohesion pulls harder the farther the center is,
+`maxSpeed` at `radius`: neither jolts when a neighbor comes into sight, nor
+sends an agent circling the center of its group.
 
 Scanning the whole crowd costs n² distance checks per frame. Beyond a few
 dozen agents, a spatial grid finds the neighbors in the nearby cells only,
