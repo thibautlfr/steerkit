@@ -34,3 +34,19 @@ export type Term = readonly [force: Vec3, weight: number];
 
 /** A plane to keep a behavior in, for 2D canvases (`"xy"`) or ground characters (`"xz"`). */
 export type Plane = "xy" | "xz" | "yz";
+
+/**
+ * A sphere (a circle in 2D) to steer around, for {@link avoidObstacles}. Its
+ * `position` lets a spatial grid sort obstacles like a crowd.
+ */
+export type Obstacle = { position: Vec3; radius: number };
+
+/** An axis-aligned box, for {@link stayWithin}: `THREE.Box3` fits as is. */
+export type Bounds = { min: Vec3; max: Vec3 };
+
+/**
+ * A flow, for {@link followFlow}: writes into `out` the direction to follow
+ * at `position`, and returns it. `out` may be `position` itself: read it
+ * before writing. Its length doesn't matter, a null one means no flow.
+ */
+export type FlowField = (position: Vec3, out: Vec3) => Vec3;

@@ -5,7 +5,14 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import type { Plugin } from "vite";
-import { home, type Page, pages, SITE } from "../src/pages.ts";
+import {
+	groups,
+	home,
+	neighbors,
+	type Page,
+	pages,
+	SITE,
+} from "../src/pages.ts";
 import { llms } from "./llms.ts";
 
 const escapeHtml = (text: string): string =>
@@ -38,6 +45,7 @@ const structuredData = JSON.stringify({
 // (which shows the first demo)
 const fill = (html: string, page: Page | undefined): string => {
 	const shown = page ?? pages[0];
+	const { previous, next } = neighbors(shown?.id ?? "");
 	const values: Record<string, string> = {
 		title: escapeHtml(
 			page ? `${page.title}, interactive demo · steerkit` : home.title,
@@ -47,12 +55,32 @@ const fill = (html: string, page: Page | undefined): string => {
 		site: SITE,
 		h1: escapeHtml(shown?.title ?? ""),
 		summary: escapeHtml(shown?.summary ?? ""),
-		nav: pages
+		nav: groups()
 			.map(
-				(p) =>
-					`<li><a href="/${p.id}/"${p.id === shown?.id ? ' aria-current="page"' : ""}>${escapeHtml(p.title)}</a></li>`,
+				({ name, pages: inGroup }) =>
+					`<div class="group"><p class="group-title">${escapeHtml(name)}</p><ul>${inGroup
+						.map(
+							(p) =>
+								`<li><a href="/${p.id}/"${p.id === shown?.id ? ' aria-current="page"' : ""}>${escapeHtml(p.title)}</a></li>`,
+						)
+						.join("")}</ul></div>`,
 			)
 			.join(""),
+		options: groups()
+			.map(
+				({ name, pages: inGroup }) =>
+					`<optgroup label="${escapeHtml(name)}">${inGroup
+						.map(
+							(p) =>
+								`<option value="${p.id}"${p.id === shown?.id ? " selected" : ""}>${escapeHtml(p.title)}</option>`,
+						)
+						.join("")}</optgroup>`,
+			)
+			.join(""),
+		previousUrl: `/${previous.id}/`,
+		previousTitle: escapeHtml(previous.title),
+		nextUrl: `/${next.id}/`,
+		nextTitle: escapeHtml(next.title),
 		jsonld: structuredData,
 	};
 	return html.replace(

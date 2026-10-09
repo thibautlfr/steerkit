@@ -17,9 +17,10 @@ the number of behaviors.
 ```
 packages/steerkit/   # the published npm package
   src/               # types, vec (internal helpers), basic, prediction, wander,
-                     # neighbors, grid, leader, combine, step
+                     # neighbors, grid, leader, avoid, bounds, path, flow,
+                     # combine, step
   test/              # unit, props (fast-check), alloc, readme
-  bench/crowd.ts     # 1,000 agents and 1,000 boids, plain Node
+  bench/crowd.ts     # 1,000 agents, boids and avoiders, plain Node
 apps/docs/           # demos site, Vite + Canvas 2D, private, deployed to GitHub Pages
   src/pages.ts       # every page's title, summary, meta description and prompt goal
   src/demos/         # one scene per behavior
@@ -29,8 +30,9 @@ apps/docs/           # demos site, Vite + Canvas 2D, private, deployed to GitHub
 ```
 
 The site lives at https://steerkit.thibaut-lefrancois.com, one URL per demo
-(`/arrive/`). A new demo needs an entry in `src/pages.ts`: it then gets its
-page, its sitemap entry, its line in llms.txt and its "Copy prompt".
+(`/arrive/`). A new demo needs an entry in `src/pages.ts`, with its
+`group`: it then gets its page, its place in the navigation, its sitemap
+entry, its line in llms.txt and its "Copy prompt".
 
 ## Commands
 
@@ -79,9 +81,12 @@ pnpm -F docs dev                # demos, aliased to the library's sources
   inline, and its inlining budget runs out in a big frame. So: no helper
   call with numbers in a per-neighbor loop (`neighbors.ts` and `leader.ts`
   run one function with a `kind` switch, all in locals), no module-level
-  scratch vectors, no `Infinity` mixed into a computed value. The allocation
-  tests catch it only if they run the code the way a frame does: the bench
-  is the second check.
+  scratch vectors, no `Infinity` mixed into a computed value. Only the
+  smallest helpers (`norm`, `set`) are always inlined; `desire` is not, so
+  `keepAway` does its maths in locals. The allocation tests catch it only
+  if they run the code the way a frame does: the bench is the second check.
+  The amount depends on when V8 compiles in the background
+  (`--no-concurrent-recompilation` hides it): bench with the default flags.
 - pnpm 11 refuses dependencies published less than a day ago
   (`minimumReleaseAge`): pin an older version rather than adding an
   exclusion.

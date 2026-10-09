@@ -10,7 +10,10 @@
 		"autonomous-agents",
 		"ai",
 		"gamedev",
-		"threejs"
+		"threejs",
+		"obstacle-avoidance",
+		"path-following",
+		"flow-field"
 	],
 	"license": "MIT",
 	"author": "Thibaut Lefrançois",
@@ -61,7 +64,7 @@
 			"name": "everything",
 			"path": "dist/index.js",
 			"import": "*",
-			"limit": "3 kB"
+			"limit": "4.3 kB"
 		},
 		{
 			"name": "seek alone",
@@ -92,6 +95,24 @@
 			"path": "dist/index.js",
 			"import": "{ follow, offsetPursuit, step }",
 			"limit": "850 B"
+		},
+		{
+			"name": "environment (avoidObstacles, stayWithin, followPath, step)",
+			"path": "dist/index.js",
+			"import": "{ avoidObstacles, stayWithin, followPath, step }",
+			"limit": "1.75 kB"
+		},
+		{
+			"name": "collisions (avoidCollisions, zero, addWithin, step)",
+			"path": "dist/index.js",
+			"import": "{ avoidCollisions, zero, addWithin, step }",
+			"limit": "1.15 kB"
+		},
+		{
+			"name": "flow field (followFlow, step)",
+			"path": "dist/index.js",
+			"import": "{ followFlow, step }",
+			"limit": "450 B"
 		}
 	]
 }

@@ -1,6 +1,15 @@
 import type { Demo, Param, Values } from "./demo.ts";
+import {
+	collisionAvoidanceDemo,
+	obstacleAvoidanceDemo,
+} from "./demos/avoid.ts";
 import { arriveDemo, fleeDemo, keepAwayDemo, seekDemo } from "./demos/basic.ts";
 import { combineDemo } from "./demos/combine.ts";
+import {
+	containmentDemo,
+	flowFieldDemo,
+	pathFollowingDemo,
+} from "./demos/environment.ts";
 import { leaderFollowingDemo, offsetPursuitDemo } from "./demos/leader.ts";
 import {
 	alignmentDemo,
@@ -12,7 +21,7 @@ import { evadeDemo, pursueDemo } from "./demos/prediction.ts";
 import { speedLimitDemo } from "./demos/speed-limit.ts";
 import { wanderDemo } from "./demos/wander.ts";
 import { highlight } from "./highlight.ts";
-import { home, SITE } from "./pages.ts";
+import { home, neighbors, SITE } from "./pages.ts";
 import { Stage } from "./stage.ts";
 
 const demos: Demo[] = [
@@ -20,15 +29,20 @@ const demos: Demo[] = [
 	fleeDemo,
 	arriveDemo,
 	keepAwayDemo,
+	wanderDemo,
 	pursueDemo,
 	evadeDemo,
-	wanderDemo,
 	separationDemo,
 	cohesionDemo,
 	alignmentDemo,
 	flockingDemo,
 	leaderFollowingDemo,
 	offsetPursuitDemo,
+	obstacleAvoidanceDemo,
+	collisionAvoidanceDemo,
+	containmentDemo,
+	pathFollowingDemo,
+	flowFieldDemo,
 	combineDemo,
 	speedLimitDemo,
 ];
@@ -39,7 +53,12 @@ const element = <T extends HTMLElement>(id: string): T => {
 	return found as T;
 };
 
-const list = element<HTMLOListElement>("demo-list");
+const list = element("demo-list");
+const select = element<HTMLSelectElement>("demo-select");
+const previous = element<HTMLAnchorElement>("previous");
+const next = element<HTMLAnchorElement>("next");
+const previousLabel = element("previous-label");
+const nextLabel = element("next-label");
 const title = element("title");
 const summary = element("summary");
 const hint = element("hint");
@@ -127,6 +146,20 @@ const show = () => {
 			link.setAttribute("aria-current", "page");
 		} else link.removeAttribute("aria-current");
 	}
+	// The current demo kept in view when the column scrolls
+	const active = list.querySelector<HTMLElement>('[aria-current="page"]');
+	if (active && list.scrollHeight > list.clientHeight) {
+		const top = active.offsetTop;
+		const bottom = top + active.offsetHeight;
+		if (top < list.scrollTop || bottom > list.scrollTop + list.clientHeight)
+			list.scrollTop = top - (list.clientHeight - active.offsetHeight) / 2;
+	}
+	select.value = demo.id;
+	const around = neighbors(demo.id);
+	previous.href = `/${around.previous.id}/`;
+	previousLabel.textContent = `Previous demo: ${around.previous.title}`;
+	next.href = `/${around.next.id}/`;
+	nextLabel.textContent = `Next demo: ${around.next.title}`;
 	title.textContent = demo.title;
 	summary.textContent = demo.summary;
 	hint.textContent = demo.hint;
@@ -142,6 +175,12 @@ const show = () => {
 };
 
 // Moving between demos without reloading the page
+const go = (path: string) => {
+	if (path === location.pathname) return;
+	history.pushState(null, "", path);
+	show();
+	window.scrollTo({ top: 0 });
+};
 document.addEventListener("click", (event) => {
 	const link = (event.target as Element).closest?.("a");
 	const internal =
@@ -158,12 +197,10 @@ document.addEventListener("click", (event) => {
 		return;
 	}
 	event.preventDefault();
-	if (link.pathname !== location.pathname) {
-		history.pushState(null, "", link.pathname);
-		show();
-		window.scrollTo({ top: 0 });
-	}
+	go(link.pathname);
 });
+// The menu that replaces the list on narrow screens
+select.addEventListener("change", () => go(`/${select.value}/`));
 window.addEventListener("popstate", show);
 show();
 
