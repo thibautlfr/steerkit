@@ -13,6 +13,7 @@ import {
 	createNeighbors,
 	createWanderState,
 	keepAway,
+	pursue,
 	queryGrid,
 	separation,
 	stayWithin,
@@ -47,6 +48,9 @@ import { stageOf } from "./stage.ts";
 
 export const MAX_FISH = 1000;
 
+// The fish are agents whose vectors are THREE.Vector3, as they are
+type Fish = Agent & { position: Vector3; velocity: Vector3 };
+
 // 16 × 9 × 10 units, about the 2D demos' scale
 const tank = new Box3(new Vector3(-8, -4.5, -5), new Vector3(8, 4.5, 5));
 const rocks = [
@@ -60,9 +64,16 @@ const rocks = [
 // Options, created once
 const walls = { margin: 1, lookAhead: 1 };
 const ahead = { radius: 0.3, lookAhead: 1 };
-const scared = { radius: 3 };
-const close = { radius: 0.6 };
-const around = { radius: 1.2 };
+const scared = { radius: 4 };
+const close = { radius: 0.5 };
+// Fish see around them but not right behind
+const around = { radius: 1, fieldOfView: (270 * Math.PI) / 180 };
+// Near the shark, a fish is up to this many times faster and more agile,
+// and the extra speed fades out over 0.6 s once it's safe
+const PANIC_SPEED = 2;
+const PANIC_FORCE = 3;
+const FEAR = 12;
+const fading = { overspeedDamping: 0.6 };
 const sharkWalls = { margin: 1.5, lookAhead: 1.5 };
 const sharkAhead = { radius: 0.6, lookAhead: 1.5 };
 const cruising = {
@@ -71,8 +82,11 @@ const cruising = {
 	jitter: 1.5,
 	plane: "xz",
 } as const;
-const swimming = { radius: 0.5, distance: 2, jitter: 1 };
+const swimming = { radius: 0.5, distance: 2, jitter: 2 };
 const sharkTurn = { turnRate: 4 };
+// The shark picks a fish to chase every few seconds
+const HUNT_SECONDS = 6;
+const chasing = {};
 
 const css = (name: string): string =>
 	getComputedStyle(document.documentElement)
@@ -130,7 +144,7 @@ export const play = (canvas: HTMLCanvasElement, values: Values): Player => {
 	}
 
 	// The school, THREE.Vector3 as they are, drawn in one call
-	const school: Agent[] = [];
+	const school: Fish[] = [];
 	const forces: Vector3[] = [];
 	const states: WanderState[] = [];
 	const spawn = () => {
@@ -142,7 +156,7 @@ export const play = (canvas: HTMLCanvasElement, values: Values): Player => {
 		school.push({
 			position: new Vector3(random(-6, 6), random(-1, 3.5), random(-3.5, 3.5)),
 			velocity: direction.setLength(2),
-			maxSpeed: 2.5,
+			maxSpeed: 2,
 			maxForce: 4,
 		});
 		forces.push(new Vector3());
@@ -173,10 +187,12 @@ export const play = (canvas: HTMLCanvasElement, values: Values): Player => {
 	const shark: Agent = {
 		position: sharkObject.position,
 		velocity: new Vector3(1.5, 0, -0.5),
-		maxSpeed: 1.8,
+		maxSpeed: 2.2,
 		maxForce: 2,
 	};
 	const sharkState = createWanderState();
+	let prey: Fish | undefined;
+	let hunting = 0;
 	const sharkForce = new Vector3();
 
 	const helper = new SteeringHelper({ capacity: 20_000 });
@@ -226,7 +242,7 @@ export const play = (canvas: HTMLCanvasElement, values: Values): Player => {
 		const count = values.count ?? 300;
 		while (school.length < count) spawn();
 		school.length = Math.min(school.length, count);
-		around.radius = values.radius ?? 1.2;
+		around.radius = values.radius ?? 1;
 		close.radius = around.radius / 2;
 		if (cellSize !== around.radius) {
 			cellSize = around.radius;
@@ -237,35 +253,48 @@ export const play = (canvas: HTMLCanvasElement, values: Values): Player => {
 
 		updateGrid(grid, school);
 		for (let i = 0; i < school.length; i++) {
-			const one = school[i] as Agent;
+			const one = school[i] as Fish;
 			const force = forces[i] as Vector3;
-			one.maxSpeed = values.maxSpeed ?? 2.5;
-			one.maxForce = values.maxForce ?? 4;
+			// Fear, 0 to 1 as the shark comes within reach
+			const fear = predator
+				? Math.max(
+						0,
+						1 - one.position.distanceTo(sharkObject.position) / scared.radius,
+					)
+				: 0;
+			one.maxSpeed = (values.maxSpeed ?? 2) * (1 + PANIC_SPEED * fear);
+			one.maxForce = (values.maxForce ?? 4) * (1 + PANIC_FORCE * fear);
 			const budget = one.maxForce;
 			const neighbors = queryGrid(grid, one.position, around.radius, near);
 			zero(force);
 			addWithin(force, budget, stayWithin(one, tank, walls, tmp));
 			addWithin(force, budget, avoidObstacles(one, rocks, ahead, tmp), 3);
 			if (predator) {
-				addWithin(force, budget, keepAway(one, shark.position, scared, tmp), 4);
+				addWithin(
+					force,
+					budget,
+					keepAway(one, shark.position, scared, tmp),
+					FEAR,
+				);
 			}
 			addWithin(
 				force,
 				budget,
 				separation(one, neighbors, close, tmp),
-				values.separation ?? 1.5,
+				values.separation ?? 2,
 			);
 			addWithin(
 				force,
 				budget,
 				alignment(one, neighbors, around, tmp),
-				values.alignment ?? 1,
+				values.alignment ?? 0.8,
 			);
 			addWithin(
 				force,
 				budget,
 				cohesion(one, neighbors, around, tmp),
-				values.cohesion ?? 1,
+				// Scared fish scatter, and regroup once safe
+				(values.cohesion ?? 0.4) * (1 - fear),
 			);
 			// What's left keeps them swimming: alignment alone matches the
 			// neighbors' speed, and the school would slow down to a crawl
@@ -274,7 +303,7 @@ export const play = (canvas: HTMLCanvasElement, values: Values): Player => {
 				budget,
 				wander(one, states[i] as WanderState, swimming, dt, tmp),
 			);
-			step(one, force, dt);
+			step(one, force, dt, fading);
 		}
 		setInstances(fish, school);
 
@@ -292,6 +321,18 @@ export const play = (canvas: HTMLCanvasElement, values: Values): Player => {
 				avoidObstacles(shark, rocks, sharkAhead, tmp),
 				3,
 			);
+			hunting -= dt;
+			if (hunting <= 0 || !prey || !school.includes(prey)) {
+				prey = school[Math.floor(Math.random() * school.length)];
+				hunting = HUNT_SECONDS;
+			}
+			if (prey) {
+				addWithin(
+					sharkForce,
+					shark.maxForce,
+					pursue(shark, prey, chasing, tmp),
+				);
+			}
 			addWithin(
 				sharkForce,
 				shark.maxForce,

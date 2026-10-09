@@ -229,7 +229,7 @@ export const pages: Page[] = [
 		title: "Aquarium",
 		group: "Three.js",
 		summary:
-			"A school of fish in a Three.js tank: flocking on a spatial grid, around the rocks, inside the glass, away from the shark. steerkit/three draws them: setInstances writes the whole school into one instanced mesh, faceVelocity turns the shark smoothly toward its way, and a SteeringHelper draws the forces, the rocks as the fish see them and the shark's reach.",
+			"A school of fish in a Three.js tank: flocking on a spatial grid, around the rocks, inside the glass. The shark hunts a fish every few seconds; near it, fish panic, faster and more agile, scatter, then regroup as their extra speed fades out (overspeedDamping). steerkit/three draws them: setInstances writes the whole school into one instanced mesh, faceVelocity turns the shark smoothly toward its way, and a SteeringHelper draws the forces, the rocks as the fish see them and the shark's reach.",
 		description:
 			"A school of fish flocking in a Three.js aquarium with steerkit: instanced meshes, smooth turning and the forces drawn by steerkit/three.",
 		goal: "steer and draw characters in this Three.js project with steerkit and its steerkit/three adapter: e.g. a school of fish or a flock of birds flocking on a spatial grid, drawn in one call with setInstances on an InstancedMesh, single characters turned toward their velocity with faceVelocity, and the forces drawn with SteeringHelper while tuning",
