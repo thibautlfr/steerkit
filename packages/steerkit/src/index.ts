@@ -18,6 +18,15 @@ export {
 	zero,
 } from "./combine.ts";
 export {
+	createGrid,
+	createNeighbors,
+	type Grid,
+	type GridOptions,
+	type Neighbors,
+	queryGrid,
+	updateGrid,
+} from "./grid.ts";
+export {
 	alignment,
 	cohesion,
 	type NeighborhoodOptions,

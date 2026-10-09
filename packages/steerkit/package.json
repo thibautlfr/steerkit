@@ -61,7 +61,7 @@
 			"name": "everything",
 			"path": "dist/index.js",
 			"import": "*",
-			"limit": "1.6 kB"
+			"limit": "2.5 kB"
 		},
 		{
 			"name": "seek alone",
@@ -74,6 +74,18 @@
 			"path": "dist/index.js",
 			"import": "{ arrive, keepAway, blend, step }",
 			"limit": "650 B"
+		},
+		{
+			"name": "flocking (separation, cohesion, alignment, zero, add, step)",
+			"path": "dist/index.js",
+			"import": "{ separation, cohesion, alignment, zero, add, step }",
+			"limit": "800 B"
+		},
+		{
+			"name": "spatial grid (createGrid, updateGrid, createNeighbors, queryGrid)",
+			"path": "dist/index.js",
+			"import": "{ createGrid, updateGrid, createNeighbors, queryGrid }",
+			"limit": "850 B"
 		}
 	]
 }

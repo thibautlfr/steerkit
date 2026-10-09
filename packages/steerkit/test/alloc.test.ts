@@ -13,14 +13,18 @@ import {
 	blend,
 	brake,
 	cohesion,
+	createGrid,
+	createNeighbors,
 	createWanderState,
 	evade,
 	flee,
 	keepAway,
 	pursue,
+	queryGrid,
 	seek,
 	separation,
 	step,
+	updateGrid,
 	wander,
 	zero,
 } from "../src/index.ts";
@@ -97,6 +101,50 @@ describe.runIf(allocated() !== undefined)("allocation", () => {
 			add(force, arrive(a, target, slowing, tmp), 1);
 			addWithin(force, a.maxForce, keepAway(a, quarry.position, around, tmp));
 			step(a, force, 0.016, soft);
+		};
+		expect(bytesPerCall(frame)).toBeLessThan(NO_OBJECT);
+	});
+
+	it("a grid allocates nothing once it holds the crowd", () => {
+		const random = seeded(2);
+		const boids = Array.from({ length: 50 }, () =>
+			agent({
+				position: vec(random() * 10, random() * 10, 0),
+				velocity: vec(random() - 0.5, random() - 0.5, 0),
+			}),
+		);
+		const grid = createGrid({ cellSize: 2, plane: "xy" });
+		const near = createNeighbors<(typeof boids)[number]>();
+		const frame = (i: number) => {
+			const boid = boids[i % boids.length] as (typeof boids)[number];
+			// A moving crowd, so the cells and the counts change
+			boid.position.x = (boid.position.x + 0.37) % 10;
+			updateGrid(grid, boids);
+			queryGrid(grid, boid.position, 2, near);
+		};
+		expect(bytesPerCall(frame)).toBeLessThan(NONE);
+	});
+
+	it("a whole flocking frame allocates no vector, array or object", () => {
+		const random = seeded(3);
+		const boids = Array.from({ length: 200 }, () =>
+			agent({
+				position: vec(random() * 20, random() * 20, 0),
+				velocity: vec(random() - 0.5, random() - 0.5, 0),
+			}),
+		);
+		const grid = createGrid({ cellSize: 2, plane: "xy" });
+		const near = createNeighbors<(typeof boids)[number]>();
+		const close = { radius: 1 };
+		const frame = (i: number) => {
+			const boid = boids[i % boids.length] as (typeof boids)[number];
+			if (i % boids.length === 0) updateGrid(grid, boids);
+			queryGrid(grid, boid.position, 2, near);
+			zero(force);
+			add(force, separation(boid, near, close, tmp), 1.5);
+			add(force, alignment(boid, near, seen, tmp), 1);
+			add(force, cohesion(boid, near, seen, tmp), 1);
+			step(boid, force, 0.016);
 		};
 		expect(bytesPerCall(frame)).toBeLessThan(NO_OBJECT);
 	});

@@ -1,6 +1,7 @@
 // One frame of 1,000 agents that wander, stay near home and keep away from a
 // point: the readable form (blend) against the allocation-free one (zero,
-// add). A baseline to compare changes against, not a gate. Plain Node, not
+// add). Then 1,000 boids flocking, their neighbors found by scanning the
+// whole crowd or by a spatial grid. A baseline to compare changes against, not a gate. Plain Node, not
 // Vitest, whose module runner adds overhead to every imported call:
 // `pnpm bench`. Each form runs in its own process, as the JIT optimizes the
 // shared functions for whichever runs first.
@@ -11,11 +12,18 @@ import v8 from "node:v8";
 import {
 	type Agent,
 	add,
+	alignment,
 	arrive,
 	blend,
+	cohesion,
+	createGrid,
+	createNeighbors,
 	createWanderState,
 	keepAway,
+	queryGrid,
+	separation,
 	step,
+	updateGrid,
 	type Vec3,
 	type WanderState,
 	wander,
@@ -61,6 +69,39 @@ const goal = vec();
 const away = vec();
 const roam = vec();
 
+// Boids spread over a 60 × 60 square, wrapped around its edges so the
+// density stays the same: a few neighbors within 2 units each
+const SIDE = 60;
+const flockRandom = random();
+const boids: Agent[] = Array.from({ length: COUNT }, () => ({
+	position: vec(flockRandom() * SIDE, flockRandom() * SIDE, 0),
+	velocity: vec(flockRandom() - 0.5, flockRandom() - 0.5, 0),
+	maxSpeed: 2,
+	maxForce: 4,
+}));
+const boidForce = vec();
+const close = { radius: 1 };
+const sight = { radius: 2 };
+const grid = createGrid<Agent>({ cellSize: 2, plane: "xy" });
+const near = createNeighbors<Agent>();
+
+const flock = (useGrid: boolean) => {
+	if (useGrid) updateGrid(grid, boids);
+	for (const boid of boids) {
+		const neighbors = useGrid
+			? queryGrid(grid, boid.position, sight.radius, near)
+			: boids;
+		zero(boidForce);
+		add(boidForce, separation(boid, neighbors, close, roam), 1.5);
+		add(boidForce, alignment(boid, neighbors, sight, roam), 1);
+		add(boidForce, cohesion(boid, neighbors, sight, roam), 1);
+		step(boid, boidForce, DT);
+		const p = boid.position;
+		p.x = ((p.x % SIDE) + SIDE) % SIDE;
+		p.y = ((p.y % SIDE) + SIDE) % SIDE;
+	}
+};
+
 const frames: Record<string, (members: Member[]) => void> = {
 	blend: (members) => {
 		for (const { agent, state, force } of members) {
@@ -82,6 +123,8 @@ const frames: Record<string, (members: Member[]) => void> = {
 			step(agent, force, DT);
 		}
 	},
+	"flocking, whole crowd": () => flock(false),
+	"flocking, grid": () => flock(true),
 };
 
 // Every byte V8 allocated so far (Node ≥ 22.18)
@@ -106,6 +149,6 @@ if (!frame) {
 	const ms = (performance.now() - start) / FRAMES;
 	const perFrame = (allocated() - bytes) / FRAMES;
 	console.log(
-		`${name.padEnd(10)}  ${ms.toFixed(3)} ms per frame  ${(perFrame / 1024).toFixed(1)} KiB allocated per frame`,
+		`${name.padEnd(21)}  ${ms.toFixed(3)} ms per frame  ${(perFrame / 1024).toFixed(1)} KiB allocated per frame`,
 	);
 }
