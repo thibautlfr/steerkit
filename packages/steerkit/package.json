@@ -1,6 +1,6 @@
 {
 	"name": "steerkit",
-	"version": "0.0.0",
+	"version": "0.1.0",
 	"description": "Craig Reynolds' steering behaviors for autonomous characters: small, typed, engine-agnostic, allocation-free.",
 	"keywords": [
 		"steering",
