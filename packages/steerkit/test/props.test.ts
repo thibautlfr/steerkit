@@ -14,7 +14,9 @@ import {
 	createWanderState,
 	evade,
 	flee,
+	follow,
 	keepAway,
+	offsetPursuit,
 	prioritize,
 	pursue,
 	queryGrid,
@@ -78,6 +80,29 @@ const behaviors = (
 		separation(agent, crowd, seen, { x: 0, y: 0, z: 0 }),
 		cohesion(agent, crowd, seen, { x: 0, y: 0, z: 0 }),
 		alignment(agent, crowd, seen, { x: 0, y: 0, z: 0 }),
+		offsetPursuit(
+			agent,
+			mover,
+			{
+				ahead: distance,
+				side: -distance,
+				slowingDistance: distance,
+				plane: "xy",
+			},
+			{ x: 0, y: 0, z: 0 },
+		),
+		follow(
+			agent,
+			mover,
+			{ distance, slowingDistance: distance, plane: "xy" },
+			{ x: 0, y: 0, z: 0 },
+		),
+		follow(
+			agent,
+			mover,
+			{ distance, slowingDistance: -distance, plane: "xy" },
+			{ x: 0, y: 0, z: 0 },
+		),
 	];
 };
 

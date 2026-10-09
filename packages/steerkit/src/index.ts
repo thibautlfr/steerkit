@@ -27,6 +27,12 @@ export {
 	updateGrid,
 } from "./grid.ts";
 export {
+	type FollowOptions,
+	follow,
+	type OffsetPursuitOptions,
+	offsetPursuit,
+} from "./leader.ts";
+export {
 	alignment,
 	cohesion,
 	type NeighborhoodOptions,

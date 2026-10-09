@@ -61,7 +61,7 @@
 			"name": "everything",
 			"path": "dist/index.js",
 			"import": "*",
-			"limit": "2.5 kB"
+			"limit": "3 kB"
 		},
 		{
 			"name": "seek alone",
@@ -85,6 +85,12 @@
 			"name": "spatial grid (createGrid, updateGrid, createNeighbors, queryGrid)",
 			"path": "dist/index.js",
 			"import": "{ createGrid, updateGrid, createNeighbors, queryGrid }",
+			"limit": "850 B"
+		},
+		{
+			"name": "leader (follow, offsetPursuit, step)",
+			"path": "dist/index.js",
+			"import": "{ follow, offsetPursuit, step }",
 			"limit": "850 B"
 		}
 	]

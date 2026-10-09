@@ -18,7 +18,9 @@ import {
 	createWanderState,
 	evade,
 	flee,
+	follow,
 	keepAway,
+	offsetPursuit,
 	pursue,
 	queryGrid,
 	seek,
@@ -71,6 +73,8 @@ describe.runIf(allocated() !== undefined)("allocation", () => {
 		{ position: vec(0.5, 0.5, 0), velocity: vec(1, 0, 0) },
 	];
 	const seen = { radius: 10, fieldOfView: 4 };
+	const slot = { ahead: -1, side: 1, slowingDistance: 2 };
+	const behind = { distance: 1, slowingDistance: 2 };
 	const force = vec();
 	const tmp = vec();
 
@@ -87,6 +91,8 @@ describe.runIf(allocated() !== undefined)("allocation", () => {
 		["separation", () => separation(a, crowd, seen, force)],
 		["cohesion", () => cohesion(a, crowd, seen, force)],
 		["alignment", () => alignment(a, crowd, seen, force)],
+		["offsetPursuit", () => offsetPursuit(a, quarry, slot, force)],
+		["follow", () => follow(a, quarry, behind, force)],
 		["zero + add", () => add(zero(force), target, 2)],
 		["addWithin", () => addWithin(zero(force), 3, target)],
 		["step", () => step(a, force, 0.016, soft)],
