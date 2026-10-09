@@ -2,8 +2,10 @@ name: Release
 
 # On main, two steps. While changesets are pending, Changesets opens (or
 # updates) a "chore: release" pull request: version bump + CHANGELOG. Once it
-# is merged, the new version is published to npm with provenance, in the
-# `npm` environment, which waits for the maintainer's approval.
+# is merged, and the maintainer approves the run in the `npm` environment,
+# the new version is staged on npm with provenance: it only becomes
+# installable once the maintainer approves it on npm too, with 2FA (npm's
+# trusted publisher only allows staged publishing).
 on:
   push:
     branches: [main]
@@ -76,14 +78,24 @@ jobs:
           cache: pnpm
           registry-url: https://registry.npmjs.org
 
+      # Staged publishing needs npm 11.15 or later
+      - run: npm install --global npm@latest
+
       - run: pnpm install --frozen-lockfile
 
       - run: pnpm build
 
-      - name: Publish to npm, tag and create the GitHub release
-        uses: changesets/action@v1
-        with:
-          publish: pnpm changeset publish
+      - name: Stage the new version on npm
+        working-directory: packages/steerkit
+        run: npm stage publish --provenance --access public
+
+      # A draft, published by hand once the staged version is approved on npm
+      - name: Draft the GitHub release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_CONFIG_PROVENANCE: "true"
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          version=$(node -p "require('./packages/steerkit/package.json').version")
+          awk -v heading="## $version" '$0 == heading { on = 1; next } /^## / && on { exit } on' \
+            packages/steerkit/CHANGELOG.md > notes.md
+          gh release create "steerkit@$version" --draft --target "$GITHUB_SHA" \
+            --title "steerkit $version" --notes-file notes.md

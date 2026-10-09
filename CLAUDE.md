@@ -91,6 +91,10 @@ pnpm -F docs dev                # demos, aliased to the library's sources
   `develop` (`feat/…`, `fix/…`, `chore/…`, `docs/…`) and target `develop`.
 - **Changesets**: a pull request that changes the published package adds
   one (`pnpm changeset`).
+- **Releases** are staged: the release workflow runs `npm stage publish`
+  (npm's trusted publisher only allows staging), then the maintainer
+  approves the version on npm with 2FA. Don't switch it back to a direct
+  `npm publish`.
 - **Ask first** before pushing, opening or merging pull requests, publishing
   to npm, or changing a GitHub or npm setting. Never publish to npm: the
   maintainer does it.
