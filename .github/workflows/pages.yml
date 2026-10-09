@@ -31,10 +31,9 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       - name: Build the demos
-        # Served from thibautlfr.github.io/steerkit/
+        # Served at the steerkit.thibaut-lefrancois.com custom domain (set in
+        # the repository's Pages settings), i.e. from the root
         run: pnpm -F docs build
-        env:
-          DOCS_BASE: /steerkit/
 
       - uses: actions/upload-pages-artifact@v3
         with:

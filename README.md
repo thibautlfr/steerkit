@@ -14,7 +14,7 @@ anonymous vector maths rewritten in every project.
 - **Reynolds' model, canonical.** `maxSpeed`, `maxForce`, optional `mass`,
   and `dt` everywhere, in units per second.
 
-**[Interactive demos](https://thibautlfr.github.io/steerkit/)**: one per
+**[Interactive demos](https://steerkit.thibaut-lefrancois.com)**: one per
 behavior, with the forces drawn and sliders for every parameter.
 
 ## Install

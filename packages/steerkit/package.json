@@ -19,7 +19,7 @@
 		"url": "git+https://github.com/thibautlfr/steerkit.git",
 		"directory": "packages/steerkit"
 	},
-	"homepage": "https://github.com/thibautlfr/steerkit#readme",
+	"homepage": "https://steerkit.thibaut-lefrancois.com",
 	"bugs": "https://github.com/thibautlfr/steerkit/issues",
 	"type": "module",
 	"sideEffects": false,
