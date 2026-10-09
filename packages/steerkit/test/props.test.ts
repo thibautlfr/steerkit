@@ -2,6 +2,7 @@
 // no NaN or Infinity, and the bounds of Reynolds' model respected.
 
 import fc from "fast-check";
+import * as THREE from "three";
 import { describe, expect, it } from "vitest";
 import {
 	type Agent,
@@ -32,6 +33,7 @@ import {
 	type Vec3,
 	wander,
 } from "../src/index.ts";
+import { faceVelocity, SteeringHelper, setInstances } from "../src/three.ts";
 import { length, seeded } from "./helpers.ts";
 
 const coord = fc.double({ min: -1e3, max: 1e3, noNaN: true });
@@ -362,6 +364,104 @@ describe("queryGrid", () => {
 						found.size === expected.length &&
 						expected.every((item) => found.has(item))
 					);
+				},
+			),
+		);
+	});
+});
+
+describe("steerkit/three", () => {
+	// Random vectors, and the ones with no direction or too much of it
+	const anyVelocity = fc.oneof(
+		vec3,
+		fc.constantFrom(
+			{ x: 0, y: 2, z: 0 },
+			{ x: 0, y: -1e-12, z: 0 },
+			{ x: 5e-324, y: 0, z: 0 },
+			{ x: 1e-160, y: -1e-160, z: 0 },
+			{ x: 1e200, y: 0, z: -1e200 },
+			{ x: Infinity, y: 0, z: 0 },
+			{ x: Number.NaN, y: 0, z: 1 },
+		),
+	);
+	const anyUp = fc.oneof(
+		vec3,
+		fc.constantFrom({ x: 0, y: 0, z: 0 }, { x: 0, y: 0, z: -3 }),
+	);
+	const dt = fc.double({ min: 0, max: 1, noNaN: true });
+	const turnRate = fc.oneof(
+		fc.double({ min: 0, max: 1e3, noNaN: true }),
+		fc.constant(Infinity),
+	);
+
+	it("faceVelocity keeps a unit quaternion", () => {
+		fc.assert(
+			fc.property(
+				anyVelocity,
+				anyUp,
+				dt,
+				turnRate,
+				fc.double({ min: -1, max: 1, noNaN: true }),
+				(velocity, up, dt, turnRate, minSpeed) => {
+					const object = new THREE.Object3D();
+					object.up.copy(up);
+					faceVelocity(object, velocity, dt, { turnRate, minSpeed });
+					faceVelocity(object, velocity, dt, { turnRate, minSpeed });
+					const { x, y, z, w } = object.quaternion;
+					return Math.abs(Math.hypot(x, y, z, w) - 1) < 1e-9;
+				},
+			),
+		);
+	});
+
+	it("setInstances writes finite matrices", () => {
+		fc.assert(
+			fc.property(
+				fc.array(fc.record({ position: vec3, velocity: anyVelocity }), {
+					maxLength: 6,
+				}),
+				anyUp,
+				fc.double({ min: -1, max: 1, noNaN: true }),
+				(agents, up, minSpeed) => {
+					const mesh = new THREE.InstancedMesh(
+						new THREE.BufferGeometry(),
+						new THREE.MeshBasicMaterial(),
+						4,
+					);
+					setInstances(mesh, agents, { up, minSpeed });
+					setInstances(mesh, agents, { up, minSpeed });
+					return mesh.instanceMatrix.array.every(Number.isFinite);
+				},
+			),
+		);
+	});
+
+	// What three's float32 buffers can hold: 1e200 can't be drawn
+	const drawableVelocity = anyVelocity.filter(
+		(v) => !(Math.abs(v.x) > 1e30 && Number.isFinite(v.x)),
+	);
+
+	it("SteeringHelper draws finite lines", () => {
+		fc.assert(
+			fc.property(
+				fc.record({ position: vec3, velocity: drawableVelocity }),
+				drawableVelocity,
+				vec3,
+				// Within float32, the precision of three's buffers; NaN and
+				// negative radii included
+				fc.double({ min: -1e30, max: 1e30 }),
+				(agent, force, point, radius) => {
+					const helper = new SteeringHelper({ capacity: 400 });
+					helper.vectors(agent, force);
+					helper.sphere(point, radius);
+					helper.circle(point, radius, "yz");
+					helper.box({ min: point, max: agent.position });
+					helper.path([point, agent.position], true);
+					const count = helper.geometry.drawRange.count;
+					const drawn = helper.geometry
+						.getAttribute("position")
+						.array.subarray(0, count * 3);
+					return count > 0 && drawn.every(Number.isFinite);
 				},
 			),
 		);
