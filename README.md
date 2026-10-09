@@ -135,7 +135,8 @@ add(force, keepAway(fairy, camera, { radius: 1 }, tmp), 2); // one tmp is enough
 For 1,000 agents (wander, arrive and keepAway each, Node 26 on an M1 Pro),
 both take about 0.1 ms per frame, but `blend` leaves about 190 KiB of
 garbage per frame, 11 MB per second at 60 fps, while `zero` and `add` leave
-none. In the same hot loops, hoist options objects (`{ slowingDistance }`)
+about 1 KiB: a few numbers V8 boxes where it stops inlining a frame this
+large. In the same hot loops, hoist options objects (`{ slowingDistance }`)
 out of the loop as constants.
 
 ### Flocking

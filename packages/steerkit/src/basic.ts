@@ -1,5 +1,5 @@
 import type { Agent, Vec3 } from "./types.ts";
-import { desire, distance, set } from "./vec.ts";
+import { desire, distance, norm, set } from "./vec.ts";
 
 /** Full speed toward `target`. */
 export function seek(agent: Agent, target: Vec3, out: Vec3): Vec3 {
@@ -38,14 +38,17 @@ export function arrive(
 	out: Vec3,
 ): Vec3 {
 	const p = agent.position;
+	const d = distance(p, target);
+	// No Infinity for "no ramp": that constant, mixed with the ramp, makes V8
+	// box the number when it doesn't inline this function
 	const ramp =
-		slowingDistance > 0 ? distance(p, target) / slowingDistance : Infinity;
+		slowingDistance > 0 && d < slowingDistance ? d / slowingDistance : 1;
 	return desire(
 		agent,
 		target.x - p.x,
 		target.y - p.y,
 		target.z - p.z,
-		agent.maxSpeed * Math.min(ramp, 1),
+		agent.maxSpeed * ramp,
 		out,
 	);
 }
@@ -62,11 +65,19 @@ export function keepAway(
 	{ radius }: { radius: number },
 	out: Vec3,
 ): Vec3 {
-	const d = distance(agent.position, from);
+	// Flee's force, scaled by k, all in locals: through flee, it would call
+	// desire, too large for V8 to always inline, and once a big frame has
+	// spent its inlining budget, that call boxes its four numbers
+	const p = agent.position;
+	const v = agent.velocity;
+	const dx = p.x - from.x;
+	const dy = p.y - from.y;
+	const dz = p.z - from.z;
+	const d = norm(dx, dy, dz);
 	if (d >= radius || d === 0) return set(out, 0, 0, 0);
-	flee(agent, from, out);
 	const k = 1 - d / radius;
-	return set(out, out.x * k, out.y * k, out.z * k);
+	const s = agent.maxSpeed / d;
+	return set(out, (dx * s - v.x) * k, (dy * s - v.y) * k, (dz * s - v.z) * k);
 }
 
 /** Come to a stop: the force opposing the velocity. */
