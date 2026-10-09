@@ -10,6 +10,8 @@ import {
 	addWithin,
 	alignment,
 	arrive,
+	avoidCollisions,
+	avoidObstacles,
 	blend,
 	brake,
 	cohesion,
@@ -19,12 +21,15 @@ import {
 	evade,
 	flee,
 	follow,
+	followFlow,
+	followPath,
 	keepAway,
 	offsetPursuit,
 	pursue,
 	queryGrid,
 	seek,
 	separation,
+	stayWithin,
 	step,
 	updateGrid,
 	wander,
@@ -75,6 +80,24 @@ describe.runIf(allocated() !== undefined)("allocation", () => {
 	const seen = { radius: 10, fieldOfView: 4 };
 	const slot = { ahead: -1, side: 1, slowingDistance: 2 };
 	const behind = { distance: 1, slowingDistance: 2 };
+	const rocks = [
+		{ position: vec(2, 0.2, 0), radius: 0.5 },
+		{ position: vec(4, -0.3, 0), radius: 1 },
+	];
+	const avoiding = { radius: 0.5, lookAhead: 30, plane: "xy" as const };
+	const room = { min: vec(-1, -1, -1), max: vec(1, 1, 1) };
+	const walls = { margin: 0.5, lookAhead: 1 };
+	const road = [vec(0, 0, 0), vec(5, 0, 0), vec(5, 5, 0), vec(0, 5, 0)];
+	const along = { radius: 0.5, lookAhead: 1, closed: true };
+	// A field that allocates nothing either: a swirl around the origin
+	const swirl = (p: { x: number; y: number }, out: typeof target) => {
+		const x = p.x;
+		out.x = -p.y;
+		out.y = x;
+		out.z = 0;
+		return out;
+	};
+	const flowing = { lookAhead: 0.5 };
 	const force = vec();
 	const tmp = vec();
 
@@ -93,6 +116,11 @@ describe.runIf(allocated() !== undefined)("allocation", () => {
 		["alignment", () => alignment(a, crowd, seen, force)],
 		["offsetPursuit", () => offsetPursuit(a, quarry, slot, force)],
 		["follow", () => follow(a, quarry, behind, force)],
+		["avoidObstacles", () => avoidObstacles(a, rocks, avoiding, force)],
+		["avoidCollisions", () => avoidCollisions(a, crowd, avoiding, force)],
+		["stayWithin", () => stayWithin(a, room, walls, force)],
+		["followPath", () => followPath(a, road, along, force)],
+		["followFlow", () => followFlow(a, swirl, flowing, force)],
 		["zero + add", () => add(zero(force), target, 2)],
 		["addWithin", () => addWithin(zero(force), 3, target)],
 		["step", () => step(a, force, 0.016, soft)],
@@ -151,6 +179,40 @@ describe.runIf(allocated() !== undefined)("allocation", () => {
 			add(force, alignment(boid, near, seen, tmp), 1);
 			add(force, cohesion(boid, near, seen, tmp), 1);
 			step(boid, force, 0.016);
+		};
+		expect(bytesPerCall(frame)).toBeLessThan(NO_OBJECT);
+	});
+
+	it("a whole avoiding frame allocates no vector, array or object", () => {
+		const random = seeded(4);
+		const crowd = Array.from({ length: 200 }, () =>
+			agent({
+				position: vec(random() * 20, random() * 20, 0),
+				velocity: vec(random() - 0.5, random() - 0.5, 0),
+			}),
+		);
+		const grid = createGrid({ cellSize: 2, plane: "xy" });
+		const near = createNeighbors<(typeof crowd)[number]>();
+		const arena = { min: vec(0, 0, 0), max: vec(20, 20, 0) };
+		const ahead = { radius: 0.3, lookAhead: 2, plane: "xy" as const };
+		const frame = (i: number) => {
+			const member = crowd[i % crowd.length] as (typeof crowd)[number];
+			if (i % crowd.length === 0) updateGrid(grid, crowd);
+			queryGrid(grid, member.position, 2, near);
+			zero(force);
+			addWithin(force, member.maxForce, stayWithin(member, arena, walls, tmp));
+			addWithin(
+				force,
+				member.maxForce,
+				avoidObstacles(member, rocks, ahead, tmp),
+			);
+			addWithin(
+				force,
+				member.maxForce,
+				avoidCollisions(member, near, ahead, tmp),
+			);
+			addWithin(force, member.maxForce, followPath(member, road, along, tmp));
+			step(member, force, 0.016);
 		};
 		expect(bytesPerCall(frame)).toBeLessThan(NO_OBJECT);
 	});

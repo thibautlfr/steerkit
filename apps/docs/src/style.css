@@ -194,31 +194,129 @@ a {
 	padding: 1.5rem;
 }
 
-.demos ol {
-	list-style: none;
-	margin: 0;
-	padding: 0;
+/* The demos by family: a column on wide screens, scrolling on its own when
+   taller than the window. Its height leaves room for the header above it at
+   the top of the page */
+.groups {
 	position: sticky;
 	top: 1.5rem;
+	max-height: calc(100vh - 7rem);
+	overflow-y: auto;
+	scrollbar-width: thin;
+	scrollbar-color: var(--border) transparent;
 }
 
-.demos a {
+.group + .group {
+	margin-top: 0.9rem;
+	padding-top: 0.9rem;
+	border-top: 1px solid var(--border);
+}
+
+.group-title {
+	margin: 0 0 0.4rem;
+	padding: 0 0.75rem;
+	font-size: 0.72rem;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--text);
+}
+
+/* The demos hang from their family's title, along a rule */
+.group ul {
+	list-style: none;
+	margin: 0 0 0 0.75rem;
+	padding: 0;
+	border-left: 1px solid var(--border);
+}
+
+.groups a {
 	display: block;
-	padding: 0.4rem 0.75rem;
-	border-radius: 0.5rem;
+	margin-left: -1px;
+	padding: 0.2rem 0.75rem;
+	border-left: 2px solid transparent;
 	color: var(--muted);
+	font-size: 0.92rem;
 	text-decoration: none;
 }
 
-.demos a:hover {
+.groups a:hover {
+	color: var(--text);
+	border-left-color: var(--muted);
+}
+
+.groups a[aria-current="page"] {
+	color: var(--accent);
+	font-weight: 600;
+	border-left-color: var(--accent);
+}
+
+/* On narrow screens, one menu and the previous and next demos instead */
+.switcher {
+	display: none;
+	gap: 0.5rem;
+}
+
+.pick {
+	position: relative;
+	flex: 1;
+	min-width: 0;
+}
+
+.pick::after {
+	content: "";
+	position: absolute;
+	top: 50%;
+	right: 1rem;
+	width: 0.45rem;
+	height: 0.45rem;
+	margin-top: -0.35rem;
+	border: solid var(--muted);
+	border-width: 0 2px 2px 0;
+	transform: rotate(45deg);
+	pointer-events: none;
+}
+
+.pick select {
+	width: 100%;
+	height: 2.75rem;
+	padding: 0 2.5rem 0 0.9rem;
+	border: 1px solid var(--border);
+	border-radius: 0.6rem;
+	background: var(--surface);
+	color: var(--text);
+	font: inherit;
+	font-weight: 600;
+	appearance: none;
+	cursor: pointer;
+}
+
+.switcher .step {
+	display: inline-flex;
+	flex: none;
+	align-items: center;
+	justify-content: center;
+	width: 2.75rem;
+	height: 2.75rem;
+	border: 1px solid var(--border);
+	border-radius: 0.6rem;
+	background: var(--surface);
 	color: var(--text);
 }
 
-.demos a[aria-current="page"] {
-	background: var(--surface);
-	color: var(--text);
-	font-weight: 600;
-	box-shadow: inset 0 0 0 1px var(--border);
+.switcher .step svg {
+	width: 1rem;
+	height: 1rem;
+	fill: none;
+	stroke: currentColor;
+	stroke-width: 2;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+
+.pick select:hover,
+.switcher .step:hover {
+	border-color: var(--muted);
 }
 
 h1 {
@@ -479,11 +577,12 @@ canvas {
 		padding: 1rem;
 	}
 
-	.demos ol {
-		position: static;
+	.groups {
+		display: none;
+	}
+
+	.switcher {
 		display: flex;
-		flex-wrap: wrap;
-		gap: 0.25rem;
 	}
 
 	.panel {

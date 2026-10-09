@@ -9,7 +9,7 @@ anonymous vector maths rewritten in every project.
   `THREE.Vector3` as it is, your engine's own. No dependency.
 - **No allocation per frame.** Every behavior writes into a vector you pass
   and returns it.
-- **Small.** 2.8 kB for everything (minified and brotlied), tree-shakable:
+- **Small.** 4.1 kB for everything (minified and brotlied), tree-shakable:
   `seek` alone is 170 B.
 - **Reynolds' model, canonical.** `maxSpeed`, `maxForce`, optional `mass`,
   and `dt` everywhere, in units per second.
@@ -95,6 +95,11 @@ return. `out` may be any of the inputs.
 | `alignment(agent, neighbors, { radius, fieldOfView? }, out)` | Steer toward the average velocity of the neighbors. |
 | `follow(agent, leader, { distance, slowingDistance, plane? }, out)` | Follow behind a leader, and step out of its way. |
 | `offsetPursuit(agent, leader, { ahead, side, slowingDistance, plane? }, out)` | Keep a slot relative to a leader: formations. |
+| `avoidObstacles(agent, obstacles, { radius, lookAhead, plane? }, out)` | Steer around the spheres (circles in 2D) in the way. |
+| `avoidCollisions(agent, others, { radius, lookAhead, plane? }, out)` | Dodge the other movers before bumping into them. |
+| `stayWithin(agent, { min, max }, { margin, lookAhead }, out)` | Turn back before the walls of a box. |
+| `followPath(agent, points, { radius, lookAhead, closed? }, out)` | Follow a polyline, within `radius` of it. |
+| `followFlow(agent, field, { lookAhead }, out)` | Go the way a flow field points. |
 | `blend(out, ...[force, weight])` | The weighted sum of forces. |
 | `prioritize(out, budget, ...forces)` | Forces in order of priority, within a budget (typically `maxForce`). |
 | `zero(out)`, `add(out, force, weight?)` | The allocation-free form of `blend`. |
@@ -103,8 +108,9 @@ return. `out` may be any of the inputs.
 | `createGrid({ cellSize, plane? })`, `updateGrid(grid, agents)` | A spatial grid, sorted once per frame, to find neighbors fast. |
 | `queryGrid(grid, position, radius, out)` | The agents within `radius`, into a list from `createNeighbors()`. |
 
-`pursue`, `evade`, `follow` and `offsetPursuit` take any `{ position,
-velocity }`, another agent included.
+`pursue`, `evade`, `follow`, `offsetPursuit` and `avoidCollisions` take
+any `{ position, velocity }`, another agent included. `lookAhead` is in
+seconds, like `dt`.
 
 ### Combining forces
 
@@ -197,13 +203,73 @@ The leader's heading is its velocity. `side` is positive to its right,
 a plane, +z for `"xy"`). Add `separation` among followers so they don't
 pile up on the same spot.
 
+### The environment
+
+`avoidObstacles` steers around obstacles, any `{ position, radius }`:
+spheres, or circles in 2D. The agent watches a corridor as wide as its own
+`radius`, as far as it travels in `lookAhead` seconds; the nearest obstacle
+in it makes the agent turn, at the same speed, toward the direction that
+just clears it. `avoidCollisions` dodges other movers (Reynolds' unaligned
+collision avoidance): it predicts when each one would pass closest, and
+steps aside from the soonest it would bump into. Two agents heading for
+each other both turn right, and pass.
+
+Both return a zero force when the way is clear. Put them first, and give
+them weight: with a target behind a rock, an equal pull toward it would
+cancel the avoidance out.
+
+```ts
+zero(force);
+addWithin(force, fairy.maxForce, avoidObstacles(fairy, rocks, { radius: 0.3, lookAhead: 1 }, tmp), 3);
+addWithin(force, fairy.maxForce, arrive(fairy, target, { slowingDistance: 1.2 }, tmp));
+step(fairy, force, dt);
+```
+
+Obstacles have a `position`, so the spatial grid sorts hundreds of them as
+it sorts a crowd. For `avoidCollisions` in a crowd, query the grid as far
+as two agents close in on each other in `lookAhead` seconds:
+`2 × maxSpeed × lookAhead + 2 × radius`. For 1,000 agents (Node 26 on an
+M1 Pro), a frame takes about 15 ms scanning the whole crowd, 0.7 ms with
+the grid, and neither leaves garbage.
+
+`stayWithin` keeps the agent inside a box, any `{ min, max }`
+(`THREE.Box3` as is; in 2D, give it no depth): when it would cross
+`margin` from a wall within `lookAhead` seconds, it turns back, keeping its
+velocity along the wall. `followPath` follows a list of points, a plain
+array or a curve's samples, `closed` for a loop: within `radius` of the
+path the agent goes its own way, beyond it steers back to a point further
+along, and an open path ends in an arrival on its last point.
+
+`followFlow` heads the way a field points where the agent will be. The
+field is yours, a function writing a direction into `out`: a grid, a
+noise, a formula.
+
+```ts
+// A grid of directions, x and y in turn, filled by your own logic
+const flow = new Float32Array(cols * rows * 2);
+const field = (p, out) => {
+	const i = Math.min(cols - 1, Math.max(0, Math.floor(p.x / size)));
+	const j = Math.min(rows - 1, Math.max(0, Math.floor(p.y / size)));
+	out.x = flow[(j * cols + i) * 2];
+	out.y = flow[(j * cols + i) * 2 + 1];
+	out.z = 0;
+	return out;
+};
+
+followFlow(agent, field, { lookAhead: 0.3 }, force);
+```
+
+The field may be handed the same vector as `p` and `out`: read `p` before
+writing `out`, as the field above does.
+
 ### 2D
 
 Keep `z` at 0, and pass `plane: "xy"` to the functions that take one:
-every behavior then keeps `z` at 0. `wander`, `follow`, `offsetPursuit`
-and `createGrid` take a `plane` (`"xy"` for a 2D canvas, `"xz"` for
-characters on the ground). Without it, `wander` roams on a sphere, in all
-three axes, and the leader behaviors take +y as up.
+every behavior then keeps `z` at 0. `wander`, `follow`, `offsetPursuit`,
+`avoidObstacles`, `avoidCollisions` and `createGrid` take a `plane`
+(`"xy"` for a 2D canvas, `"xz"` for characters on the ground). Without it,
+`wander` roams on a sphere, in all three axes, and the leader and
+avoidance behaviors take +y as up.
 
 ### Speed limit
 
@@ -240,8 +306,6 @@ the objects you already have, and stays out of the rest.
 
 ## Roadmap
 
-- **0.3**: the environment: obstacle avoidance, containment, path
-  following, flow fields, unaligned collision avoidance.
 - **0.4**: a `steerkit/three` adapter with debug helpers to draw the forces.
 
 ## References

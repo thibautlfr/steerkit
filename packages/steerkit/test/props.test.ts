@@ -7,6 +7,8 @@ import {
 	type Agent,
 	alignment,
 	arrive,
+	avoidCollisions,
+	avoidObstacles,
 	brake,
 	cohesion,
 	createGrid,
@@ -15,6 +17,8 @@ import {
 	evade,
 	flee,
 	follow,
+	followFlow,
+	followPath,
 	keepAway,
 	offsetPursuit,
 	prioritize,
@@ -22,6 +26,7 @@ import {
 	queryGrid,
 	seek,
 	separation,
+	stayWithin,
 	step,
 	updateGrid,
 	type Vec3,
@@ -115,6 +120,59 @@ const behaviors = (
 			agent,
 			mover,
 			{ distance, slowingDistance: -distance, plane: "xy" },
+			{ x: 0, y: 0, z: 0 },
+		),
+		avoidObstacles(
+			agent,
+			[
+				{ position: target, radius: Math.abs(distance) },
+				{ position: other, radius: distance },
+				{ position: agent.position, radius: 1 },
+			],
+			{ radius: distance, lookAhead: Math.abs(distance), plane: "xy" },
+			{ x: 0, y: 0, z: 0 },
+		),
+		avoidCollisions(
+			agent,
+			crowd,
+			{ radius: Math.abs(distance), lookAhead: distance, plane: "xy" },
+			{ x: 0, y: 0, z: 0 },
+		),
+		// A box from target to other, inverted on the axes where other is
+		// lower
+		stayWithin(
+			agent,
+			{ min: target, max: other },
+			{ margin: distance, lookAhead: Math.abs(distance) },
+			{ x: 0, y: 0, z: 0 },
+		),
+		followPath(
+			agent,
+			[target, other, agent.position, target],
+			{ radius: distance, lookAhead: Math.abs(distance) },
+			{ x: 0, y: 0, z: 0 },
+		),
+		followPath(
+			agent,
+			[target, other],
+			{ radius: distance, lookAhead: distance, closed: true },
+			{ x: 0, y: 0, z: 0 },
+		),
+		followPath(
+			agent,
+			[other],
+			{ radius: distance, lookAhead: Math.abs(distance) },
+			{ x: 0, y: 0, z: 0 },
+		),
+		followFlow(
+			agent,
+			(_, out) => {
+				out.x = other.x;
+				out.y = other.y;
+				out.z = other.z;
+				return out;
+			},
+			{ lookAhead: distance },
 			{ x: 0, y: 0, z: 0 },
 		),
 	];

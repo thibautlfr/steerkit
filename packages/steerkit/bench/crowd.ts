@@ -1,7 +1,8 @@
 // One frame of 1,000 agents that wander, stay near home and keep away from a
 // point: the readable form (blend) against the allocation-free one (zero,
-// add). Then 1,000 boids flocking, their neighbors found by scanning the
-// whole crowd or by a spatial grid. A baseline to compare changes against, not a gate. Plain Node, not
+// add). Then 1,000 boids flocking, and 1,000 agents wandering clear of each
+// other, their neighbors found by scanning the whole crowd or by a spatial
+// grid. A baseline to compare changes against, not a gate. Plain Node, not
 // Vitest, whose module runner adds overhead to every imported call:
 // `pnpm bench`. Each form runs in its own process, as the JIT optimizes the
 // shared functions for whichever runs first.
@@ -12,8 +13,10 @@ import v8 from "node:v8";
 import {
 	type Agent,
 	add,
+	addWithin,
 	alignment,
 	arrive,
+	avoidCollisions,
 	blend,
 	cohesion,
 	createGrid,
@@ -102,6 +105,39 @@ const flock = (useGrid: boolean) => {
 	}
 };
 
+// Wandering agents that steer clear of each other, avoidance first. The
+// grid query reaches as far as two agents closing in at top speed get in
+// `lookAhead`, plus their radii
+const ahead = { radius: 0.3, lookAhead: 0.5, plane: "xy" as const };
+const reach = 2 * 2 * ahead.lookAhead + 2 * ahead.radius;
+const flat = { ...wandering, plane: "xy" as const };
+const states = boids.map(() => createWanderState(random()));
+
+const avoiding = (useGrid: boolean) => {
+	if (useGrid) updateGrid(grid, boids);
+	for (let i = 0; i < boids.length; i++) {
+		const boid = boids[i] as Agent;
+		const others = useGrid
+			? queryGrid(grid, boid.position, reach, near)
+			: boids;
+		zero(boidForce);
+		addWithin(
+			boidForce,
+			boid.maxForce,
+			avoidCollisions(boid, others, ahead, roam),
+		);
+		addWithin(
+			boidForce,
+			boid.maxForce,
+			wander(boid, states[i] as WanderState, flat, DT, roam),
+		);
+		step(boid, boidForce, DT);
+		const p = boid.position;
+		p.x = ((p.x % SIDE) + SIDE) % SIDE;
+		p.y = ((p.y % SIDE) + SIDE) % SIDE;
+	}
+};
+
 const frames: Record<string, (members: Member[]) => void> = {
 	blend: (members) => {
 		for (const { agent, state, force } of members) {
@@ -125,6 +161,8 @@ const frames: Record<string, (members: Member[]) => void> = {
 	},
 	"flocking, whole crowd": () => flock(false),
 	"flocking, grid": () => flock(true),
+	"avoiding, whole crowd": () => avoiding(false),
+	"avoiding, grid": () => avoiding(true),
 };
 
 // Every byte V8 allocated so far (Node ≥ 22.18)
