@@ -1,7 +1,7 @@
 import type { Agent, Mover, Vec3 } from "./types.ts";
 import { desire, distance, length } from "./vec.ts";
 
-type PredictionOptions = {
+export type PredictionOptions = {
 	/** Cap on how far ahead to predict, in seconds. Unbounded when not given. */
 	maxPrediction?: number;
 };

@@ -17,7 +17,7 @@ export {
 	prioritize,
 	zero,
 } from "./combine.ts";
-export { evade, pursue } from "./prediction.ts";
+export { evade, type PredictionOptions, pursue } from "./prediction.ts";
 export { type StepOptions, step } from "./step.ts";
 export type { Agent, Mover, Plane, Term, Vec3 } from "./types.ts";
 export {
