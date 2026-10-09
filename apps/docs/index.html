@@ -85,7 +85,34 @@
 
 		<div class="layout">
 			<nav class="demos" aria-label="Demos">
-				<ol id="demo-list">{{nav}}</ol>
+				<div class="switcher">
+					<a
+						id="previous"
+						class="step"
+						href="{{previousUrl}}"
+						aria-label="Previous demo: {{previousTitle}}"
+					>
+						<svg viewBox="0 0 16 16" aria-hidden="true">
+							<path d="M10 3 5 8l5 5" />
+						</svg>
+					</a>
+					<span class="pick">
+						<select id="demo-select" aria-label="Demo">
+							{{options}}
+						</select>
+					</span>
+					<a
+						id="next"
+						class="step"
+						href="{{nextUrl}}"
+						aria-label="Next demo: {{nextTitle}}"
+					>
+						<svg viewBox="0 0 16 16" aria-hidden="true">
+							<path d="m6 3 5 5-5 5" />
+						</svg>
+					</a>
+				</div>
+				<div id="demo-list" class="groups">{{nav}}</div>
 			</nav>
 
 			<main>

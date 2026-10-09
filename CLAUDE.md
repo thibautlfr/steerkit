@@ -30,8 +30,9 @@ apps/docs/           # demos site, Vite + Canvas 2D, private, deployed to GitHub
 ```
 
 The site lives at https://steerkit.thibaut-lefrancois.com, one URL per demo
-(`/arrive/`). A new demo needs an entry in `src/pages.ts`: it then gets its
-page, its sitemap entry, its line in llms.txt and its "Copy prompt".
+(`/arrive/`). A new demo needs an entry in `src/pages.ts`, with its
+`group`: it then gets its page, its place in the navigation, its sitemap
+entry, its line in llms.txt and its "Copy prompt".
 
 ## Commands
 
