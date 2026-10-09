@@ -98,8 +98,10 @@ Versions and the changelog come from [Changesets](https://github.com/changesets/
    `pnpm changeset`, then pick the bump and describe the change.
 2. When `develop` is merged into `main`, the release workflow opens a
    "chore: release" pull request: version bump and `CHANGELOG.md`.
-3. Merging that pull request publishes the new version to npm, with
-   provenance, through npm trusted publishing (no token), once the
-   maintainer approves the run in the `npm` environment.
+3. Merging that pull request, once the maintainer approves the run in the
+   `npm` environment, stages the new version on npm with provenance,
+   through npm trusted publishing (no token). It becomes installable only
+   when the maintainer approves it on npm, with two-factor authentication
+   ([staged publishing](https://docs.npmjs.com/staged-publishing)).
 
-Only the maintainer can merge into `main` and approve a publish.
+Only the maintainer can merge into `main` and approve a release.
