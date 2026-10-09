@@ -17,9 +17,10 @@ the number of behaviors.
 ```
 packages/steerkit/   # the published npm package
   src/               # types, vec (internal helpers), basic, prediction, wander,
-                     # neighbors, grid, leader, combine, step
+                     # neighbors, grid, leader, avoid, bounds, path, flow,
+                     # combine, step
   test/              # unit, props (fast-check), alloc, readme
-  bench/crowd.ts     # 1,000 agents and 1,000 boids, plain Node
+  bench/crowd.ts     # 1,000 agents, boids and avoiders, plain Node
 apps/docs/           # demos site, Vite + Canvas 2D, private, deployed to GitHub Pages
   src/pages.ts       # every page's title, summary, meta description and prompt goal
   src/demos/         # one scene per behavior
