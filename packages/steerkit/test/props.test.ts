@@ -5,16 +5,25 @@ import fc from "fast-check";
 import { describe, expect, it } from "vitest";
 import {
 	type Agent,
+	alignment,
 	arrive,
 	brake,
+	cohesion,
+	createGrid,
+	createNeighbors,
 	createWanderState,
 	evade,
 	flee,
+	follow,
 	keepAway,
+	offsetPursuit,
 	prioritize,
 	pursue,
+	queryGrid,
 	seek,
+	separation,
 	step,
+	updateGrid,
 	type Vec3,
 	wander,
 } from "../src/index.ts";
@@ -26,6 +35,20 @@ const vec2 = fc.record({ x: coord, y: coord, z: fc.constant(0) });
 const positive = (max: number) =>
 	fc.double({ min: 1e-3, max, noNaN: true, noDefaultInfinity: true });
 const anyDistance = fc.double({ min: -10, max: 10, noNaN: true });
+
+// The scale of a scene: 0, or no smaller than SCENE_MIN. Below ~1e-154,
+// squares underflow into denormals and norm() drifts (vec.ts): the speed
+// bound is promised at that scale, finiteness at any. Far above 1e-154, as
+// a product (velocity × prediction time) gets smaller than its factors
+const SCENE_MIN = 1e-9;
+const atSceneScale = (n: fc.Arbitrary<number>) =>
+	n.map((x) => (Math.abs(x) < SCENE_MIN ? 0 : x));
+const sceneVec3 = fc.record({
+	x: atSceneScale(coord),
+	y: atSceneScale(coord),
+	z: atSceneScale(coord),
+});
+const sceneDistance = atSceneScale(anyDistance);
 
 const agentOf = (v: fc.Arbitrary<Vec3>): fc.Arbitrary<Agent> =>
 	fc.record(
@@ -51,6 +74,9 @@ const behaviors = (
 	distance: number,
 ): Vec3[] => {
 	const mover = { position: target, velocity: other };
+	// The agent itself included, as a whole crowd would be
+	const crowd = [agent, mover, { position: other, velocity: target }];
+	const seen = { radius: distance, fieldOfView: Math.abs(distance) };
 	return [
 		seek(agent, target, { x: 0, y: 0, z: 0 }),
 		flee(agent, target, { x: 0, y: 0, z: 0 }),
@@ -62,6 +88,33 @@ const behaviors = (
 			agent,
 			mover,
 			{ maxPrediction: Math.abs(distance) },
+			{ x: 0, y: 0, z: 0 },
+		),
+		separation(agent, crowd, { radius: distance }, { x: 0, y: 0, z: 0 }),
+		separation(agent, crowd, seen, { x: 0, y: 0, z: 0 }),
+		cohesion(agent, crowd, seen, { x: 0, y: 0, z: 0 }),
+		alignment(agent, crowd, seen, { x: 0, y: 0, z: 0 }),
+		offsetPursuit(
+			agent,
+			mover,
+			{
+				ahead: distance,
+				side: -distance,
+				slowingDistance: distance,
+				plane: "xy",
+			},
+			{ x: 0, y: 0, z: 0 },
+		),
+		follow(
+			agent,
+			mover,
+			{ distance, slowingDistance: distance, plane: "xy" },
+			{ x: 0, y: 0, z: 0 },
+		),
+		follow(
+			agent,
+			mover,
+			{ distance, slowingDistance: -distance, plane: "xy" },
 			{ x: 0, y: 0, z: 0 },
 		),
 	];
@@ -94,17 +147,22 @@ describe("every behavior", () => {
 	// (keepAway) desires the current velocity, which `step` then bounds
 	it("never desires more than maxSpeed, or the current speed", () => {
 		fc.assert(
-			fc.property(anyAgent, vec3, vec3, anyDistance, (agent, t, o, d) =>
-				behaviors(agent, t, o, d).every((force) => {
-					const v = agent.velocity;
-					const desired = Math.hypot(
-						force.x + v.x,
-						force.y + v.y,
-						force.z + v.z,
-					);
-					const bound = Math.max(agent.maxSpeed, length(v));
-					return desired <= bound * (1 + 1e-9) + 1e-9;
-				}),
+			fc.property(
+				agentOf(sceneVec3),
+				sceneVec3,
+				sceneVec3,
+				sceneDistance,
+				(agent, t, o, d) =>
+					behaviors(agent, t, o, d).every((force) => {
+						const v = agent.velocity;
+						const desired = Math.hypot(
+							force.x + v.x,
+							force.y + v.y,
+							force.z + v.z,
+						);
+						const bound = Math.max(agent.maxSpeed, length(v));
+						return desired <= bound * (1 + 1e-9) + 1e-9;
+					}),
 			),
 		);
 	});
@@ -209,6 +267,45 @@ describe("step", () => {
 					speed <= Math.max(agent.maxSpeed, previous) * (1 + 1e-9) + 1e-9
 				);
 			}),
+		);
+	});
+});
+
+describe("queryGrid", () => {
+	it("finds what a scan of every item finds", () => {
+		fc.assert(
+			fc.property(
+				fc.array(vec3, { maxLength: 60 }),
+				vec3,
+				fc.double({ min: 0, max: 500, noNaN: true }),
+				fc.double({ min: 1e-3, max: 300, noNaN: true }),
+				fc.constantFrom("xy", "xz", "yz", undefined),
+				(positions, at, radius, cellSize, plane) => {
+					const items = positions.map((position) => ({ position }));
+					const grid = createGrid<{ position: Vec3 }>({
+						cellSize,
+						...(plane && { plane }),
+					});
+					const out = queryGrid(
+						updateGrid(grid, items),
+						at,
+						radius,
+						createNeighbors(),
+					);
+					const found = new Set(Array.from(out));
+					const expected = items.filter(
+						({ position: p }) =>
+							Math.sqrt(
+								(p.x - at.x) ** 2 + (p.y - at.y) ** 2 + (p.z - at.z) ** 2,
+							) <= radius,
+					);
+					return (
+						out.length === expected.length &&
+						found.size === expected.length &&
+						expected.every((item) => found.has(item))
+					);
+				},
+			),
 		);
 	});
 });

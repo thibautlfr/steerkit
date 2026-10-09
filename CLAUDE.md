@@ -16,9 +16,10 @@ the number of behaviors.
 
 ```
 packages/steerkit/   # the published npm package
-  src/               # types, vec (internal helpers), basic, prediction, wander, combine, step
+  src/               # types, vec (internal helpers), basic, prediction, wander,
+                     # neighbors, grid, leader, combine, step
   test/              # unit, props (fast-check), alloc, readme
-  bench/crowd.ts     # 1,000 agents, plain Node
+  bench/crowd.ts     # 1,000 agents and 1,000 boids, plain Node
 apps/docs/           # demos site, Vite + Canvas 2D, private, deployed to GitHub Pages
   src/pages.ts       # every page's title, summary, meta description and prompt goal
   src/demos/         # one scene per behavior
@@ -74,6 +75,13 @@ pnpm -F docs dev                # demos, aliased to the library's sources
   first).
 - `Math.random` allocates in V8: allocation tests use a typed-array seeded
   generator (`test/helpers.ts`).
+- V8 boxes a number (a heap allocation) when it crosses a call it didn't
+  inline, and its inlining budget runs out in a big frame. So: no helper
+  call with numbers in a per-neighbor loop (`neighbors.ts` and `leader.ts`
+  run one function with a `kind` switch, all in locals), no module-level
+  scratch vectors, no `Infinity` mixed into a computed value. The allocation
+  tests catch it only if they run the code the way a frame does: the bench
+  is the second check.
 - pnpm 11 refuses dependencies published less than a day ago
   (`minimumReleaseAge`): pin an older version rather than adding an
   exclusion.
@@ -91,6 +99,10 @@ pnpm -F docs dev                # demos, aliased to the library's sources
   `develop` (`feat/…`, `fix/…`, `chore/…`, `docs/…`) and target `develop`.
 - **Changesets**: a pull request that changes the published package adds
   one (`pnpm changeset`).
+- **Releases** are staged: the release workflow runs `npm stage publish`
+  (npm's trusted publisher only allows staging), then the maintainer
+  approves the version on npm with 2FA. Don't switch it back to a direct
+  `npm publish`.
 - **Ask first** before pushing, opening or merging pull requests, publishing
   to npm, or changing a GitHub or npm setting. Never publish to npm: the
   maintainer does it.

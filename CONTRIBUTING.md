@@ -18,9 +18,10 @@ pnpm -F docs dev     # the demos, served from the library's sources
 
 ```
 packages/steerkit/   # the published library
-  src/               # one file per family: basic, prediction, wander, combine, step
+  src/               # one file per family: basic, prediction, wander,
+                     # neighbors, grid, leader, combine, step
   test/              # unit, property, allocation and README tests
-  bench/             # the 1,000-agent baseline
+  bench/             # the 1,000-agent and 1,000-boid baselines
 apps/docs/           # the demos site (Vite + Canvas 2D), not published
 ```
 
@@ -46,9 +47,11 @@ pnpm -F steerkit check:package   # exports and types (publint, attw)
   inputs at every function: outputs stay finite, the speed never exceeds
   `maxSpeed`, the force never exceeds `maxForce`.
 - **Allocation tests** count the bytes V8 allocates over thousands of calls,
-  so a per-frame function never creates an object. Two things they taught
+  so a per-frame function never creates an object. Three things they taught
   us: `Math.hypot` allocates in V8 (the library uses `Math.sqrt`), and so
-  does `Math.random`. They run on Node ≥ 22.18 and skip on older versions.
+  does `Math.random`; and a number crossing a call V8 didn't inline is
+  boxed, so the loops over neighbors call no helper. They run on Node ≥
+  22.18 and skip on older versions.
 - **The README example** runs as written, so it can't drift from the API.
 
 ### Benchmark
@@ -57,8 +60,9 @@ pnpm -F steerkit check:package   # exports and types (publint, attw)
 pnpm -F steerkit bench
 ```
 
-One frame of 1,000 agents, with `blend` and with `zero` + `add`: time and
-bytes allocated per frame. Plain Node rather than Vitest, whose module
+One frame of 1,000 agents, with `blend` and with `zero` + `add`, then of
+1,000 boids flocking, their neighbors found by scanning the whole crowd or
+by the spatial grid: time and bytes allocated per frame. Plain Node rather than Vitest, whose module
 runner adds overhead to every imported call. A baseline to compare a change
 against, not a CI gate: timings are too noisy for that.
 
@@ -98,8 +102,10 @@ Versions and the changelog come from [Changesets](https://github.com/changesets/
    `pnpm changeset`, then pick the bump and describe the change.
 2. When `develop` is merged into `main`, the release workflow opens a
    "chore: release" pull request: version bump and `CHANGELOG.md`.
-3. Merging that pull request publishes the new version to npm, with
-   provenance, through npm trusted publishing (no token), once the
-   maintainer approves the run in the `npm` environment.
+3. Merging that pull request, once the maintainer approves the run in the
+   `npm` environment, stages the new version on npm with provenance,
+   through npm trusted publishing (no token). It becomes installable only
+   when the maintainer approves it on npm, with two-factor authentication
+   ([staged publishing](https://docs.npmjs.com/staged-publishing)).
 
-Only the maintainer can merge into `main` and approve a publish.
+Only the maintainer can merge into `main` and approve a release.
