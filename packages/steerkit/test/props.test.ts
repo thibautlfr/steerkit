@@ -27,6 +27,20 @@ const positive = (max: number) =>
 	fc.double({ min: 1e-3, max, noNaN: true, noDefaultInfinity: true });
 const anyDistance = fc.double({ min: -10, max: 10, noNaN: true });
 
+// The scale of a scene: 0, or no smaller than SCENE_MIN. Below ~1e-154,
+// squares underflow into denormals and norm() drifts (vec.ts): the speed
+// bound is promised at that scale, finiteness at any. Far above 1e-154, as
+// a product (velocity × prediction time) gets smaller than its factors
+const SCENE_MIN = 1e-9;
+const atSceneScale = (n: fc.Arbitrary<number>) =>
+	n.map((x) => (Math.abs(x) < SCENE_MIN ? 0 : x));
+const sceneVec3 = fc.record({
+	x: atSceneScale(coord),
+	y: atSceneScale(coord),
+	z: atSceneScale(coord),
+});
+const sceneDistance = atSceneScale(anyDistance);
+
 const agentOf = (v: fc.Arbitrary<Vec3>): fc.Arbitrary<Agent> =>
 	fc.record(
 		{
@@ -94,17 +108,22 @@ describe("every behavior", () => {
 	// (keepAway) desires the current velocity, which `step` then bounds
 	it("never desires more than maxSpeed, or the current speed", () => {
 		fc.assert(
-			fc.property(anyAgent, vec3, vec3, anyDistance, (agent, t, o, d) =>
-				behaviors(agent, t, o, d).every((force) => {
-					const v = agent.velocity;
-					const desired = Math.hypot(
-						force.x + v.x,
-						force.y + v.y,
-						force.z + v.z,
-					);
-					const bound = Math.max(agent.maxSpeed, length(v));
-					return desired <= bound * (1 + 1e-9) + 1e-9;
-				}),
+			fc.property(
+				agentOf(sceneVec3),
+				sceneVec3,
+				sceneVec3,
+				sceneDistance,
+				(agent, t, o, d) =>
+					behaviors(agent, t, o, d).every((force) => {
+						const v = agent.velocity;
+						const desired = Math.hypot(
+							force.x + v.x,
+							force.y + v.y,
+							force.z + v.z,
+						);
+						const bound = Math.max(agent.maxSpeed, length(v));
+						return desired <= bound * (1 + 1e-9) + 1e-9;
+					}),
 			),
 		);
 	});

@@ -11,7 +11,9 @@ export const set = (out: Vec3, x: number, y: number, z: number): Vec3 => {
 };
 
 // Not Math.hypot: V8 allocates a temporary array for it when the call isn't
-// optimized away, and its overflow safety is moot at the scale of a scene
+// optimized away, and its overflow and underflow safety is moot at the scale
+// of a scene. Beyond 1e154 or below 1e-154, squares leave the range of
+// doubles and the norm drifts (up to 7% short at 1e-162).
 export const norm = (x: number, y: number, z: number): number =>
 	Math.sqrt(x * x + y * y + z * z);
 
