@@ -1,6 +1,13 @@
 import type { Demo, Param, Values } from "./demo.ts";
 import { arriveDemo, fleeDemo, keepAwayDemo, seekDemo } from "./demos/basic.ts";
 import { combineDemo } from "./demos/combine.ts";
+import { leaderFollowingDemo, offsetPursuitDemo } from "./demos/leader.ts";
+import {
+	alignmentDemo,
+	cohesionDemo,
+	flockingDemo,
+	separationDemo,
+} from "./demos/neighbors.ts";
 import { evadeDemo, pursueDemo } from "./demos/prediction.ts";
 import { speedLimitDemo } from "./demos/speed-limit.ts";
 import { wanderDemo } from "./demos/wander.ts";
@@ -16,6 +23,12 @@ const demos: Demo[] = [
 	pursueDemo,
 	evadeDemo,
 	wanderDemo,
+	separationDemo,
+	cohesionDemo,
+	alignmentDemo,
+	flockingDemo,
+	leaderFollowingDemo,
+	offsetPursuitDemo,
 	combineDemo,
 	speedLimitDemo,
 ];
