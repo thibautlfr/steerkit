@@ -75,6 +75,7 @@ school.forEach((f, i) => {
 	addWithin(force, f.maxForce, separation(f, neighbors, { radius: ${n((v.radius ?? 0) / 2)} }, tmp), ${n(v.separation ?? 0)});
 	addWithin(force, f.maxForce, alignment(f, neighbors, { radius: ${radius} }, tmp), ${n(v.alignment ?? 0)});
 	addWithin(force, f.maxForce, cohesion(f, neighbors, { radius: ${radius} }, tmp), ${n(v.cohesion ?? 0)});
+	addWithin(force, f.maxForce, wander(f, states[i], { radius: 0.5, distance: 2, jitter: 1 }, dt, tmp)); // keeps them swimming
 	step(f, force, dt);
 });
 setInstances(fish, school); // positions and headings, one draw call${

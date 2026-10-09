@@ -18,6 +18,7 @@ import {
 	stayWithin,
 	step,
 	updateGrid,
+	type WanderState,
 	wander,
 	zero,
 } from "steerkit";
@@ -70,6 +71,7 @@ const cruising = {
 	jitter: 1.5,
 	plane: "xz",
 } as const;
+const swimming = { radius: 0.5, distance: 2, jitter: 1 };
 const sharkTurn = { turnRate: 4 };
 
 const css = (name: string): string =>
@@ -130,6 +132,7 @@ export const play = (canvas: HTMLCanvasElement, values: Values): Player => {
 	// The school, THREE.Vector3 as they are, drawn in one call
 	const school: Agent[] = [];
 	const forces: Vector3[] = [];
+	const states: WanderState[] = [];
 	const spawn = () => {
 		const direction = new Vector3(
 			random(-1, 1),
@@ -143,6 +146,7 @@ export const play = (canvas: HTMLCanvasElement, values: Values): Player => {
 			maxForce: 4,
 		});
 		forces.push(new Vector3());
+		states.push(createWanderState());
 	};
 	const fish = new InstancedMesh(
 		fishGeometry(),
@@ -262,6 +266,13 @@ export const play = (canvas: HTMLCanvasElement, values: Values): Player => {
 				budget,
 				cohesion(one, neighbors, around, tmp),
 				values.cohesion ?? 1,
+			);
+			// What's left keeps them swimming: alignment alone matches the
+			// neighbors' speed, and the school would slow down to a crawl
+			addWithin(
+				force,
+				budget,
+				wander(one, states[i] as WanderState, swimming, dt, tmp),
 			);
 			step(one, force, dt);
 		}
