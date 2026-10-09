@@ -99,7 +99,7 @@ export const pages: Page[] = [
 		title: "Separation",
 		group: "Groups",
 		summary:
-			"Each agent steers away from the neighbors it sees, harder from the nearest: every neighbor within the radius pushes along the line between them, weighted by 1/distance. The highlighted agent shows its neighborhood: the radius, and the field of view (neighbors behind it are ignored). Here it is blended with wander; set its weight to 0 to see the crowd without it.",
+			"Each agent steers away from the neighbors it sees, harder from the nearest: every neighbor within the radius pushes along the line between them, weighted by 1/distance, and the push fades out as the nearest one nears the edge of the radius, so a neighbor coming into sight doesn't jolt. The highlighted agent shows its neighborhood: the radius, and the field of view (neighbors behind it are ignored). Here it is blended with wander; set its weight to 0 to see the crowd without it.",
 		description:
 			"Interactive demo of separation, Reynolds' boids behavior: steer away from nearby neighbors to avoid crowding. Neighborhood drawn, steerkit code.",
 		goal: "make characters keep their distance from each other in a crowd (separation), with the neighbors from the project's own list of characters",
@@ -109,7 +109,7 @@ export const pages: Page[] = [
 		title: "Cohesion",
 		group: "Groups",
 		summary:
-			"Each agent seeks the center of the neighbors it sees: what keeps a group together. On its own, cohesion clumps the agents into tight knots; flocking balances it with separation. Here it is blended with wander, so the groups keep moving.",
+			"Each agent is pulled toward the center of the neighbors it sees, harder the farther it is: none on the center itself, maxSpeed at the radius. What keeps a group together. A pull rather than a seek, so the agents don't overshoot the center and circle it: the groups travel. On its own, cohesion clumps the agents into knots; flocking balances it with separation. Here it is blended with wander, so the groups keep moving.",
 		description:
 			"Interactive demo of cohesion, Reynolds' boids behavior: steer toward the center of nearby neighbors to stay together. Live steerkit code.",
 		goal: "make characters stay together in groups (cohesion), with the neighbors from the project's own list of characters",
@@ -223,6 +223,16 @@ export const pages: Page[] = [
 		description:
 			"Soft speed limit in steerkit: when maxSpeed drops after a boost, fade the extra speed out instead of cutting it in one frame. Chart and code.",
 		goal: "move characters with steerkit and make the end of a speed boost fade out smoothly (step with overspeedDamping)",
+	},
+	{
+		id: "aquarium",
+		title: "Aquarium",
+		group: "Three.js",
+		summary:
+			"A school of fish in a Three.js tank: flocking on a spatial grid, around the rocks, inside the glass. The shark hunts a fish every few seconds; near it, fish panic, faster and more agile, scatter, then regroup as their extra speed fades out (overspeedDamping). steerkit/three draws them: setInstances writes the whole school into one instanced mesh, faceVelocity turns the shark smoothly toward its way, and a SteeringHelper draws the forces, the rocks as the fish see them and the shark's reach.",
+		description:
+			"A school of fish flocking in a Three.js aquarium with steerkit: instanced meshes, smooth turning and the forces drawn by steerkit/three.",
+		goal: "steer and draw characters in this Three.js project with steerkit and its steerkit/three adapter: e.g. a school of fish or a flock of birds flocking on a spatial grid, drawn in one call with setInstances on an InstancedMesh, single characters turned toward their velocity with faceVelocity, and the forces drawn with SteeringHelper while tuning",
 	},
 ];
 

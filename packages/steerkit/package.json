@@ -10,6 +10,7 @@
 		"autonomous-agents",
 		"ai",
 		"gamedev",
+		"three",
 		"threejs",
 		"obstacle-avoidance",
 		"path-following",
@@ -31,6 +32,10 @@
 			"types": "./dist/index.d.ts",
 			"default": "./dist/index.js"
 		},
+		"./three": {
+			"types": "./dist/three.d.ts",
+			"default": "./dist/three.js"
+		},
 		"./package.json": "./package.json"
 	},
 	"main": "./dist/index.js",
@@ -46,6 +51,14 @@
 		"size": "size-limit",
 		"check:package": "publint && attw --pack . --profile esm-only",
 		"prepack": "cp ../../README.md ../../LICENSE ."
+	},
+	"peerDependencies": {
+		"three": ">=0.152.0"
+	},
+	"peerDependenciesMeta": {
+		"three": {
+			"optional": true
+		}
 	},
 	"devDependencies": {
 		"@arethetypeswrong/cli": "^0.18.5",
@@ -113,6 +126,42 @@
 			"path": "dist/index.js",
 			"import": "{ followFlow, step }",
 			"limit": "450 B"
+		},
+		{
+			"name": "three: faceVelocity",
+			"path": "dist/three.js",
+			"import": "{ faceVelocity }",
+			"ignore": [
+				"three"
+			],
+			"limit": "750 B"
+		},
+		{
+			"name": "three: setInstances",
+			"path": "dist/three.js",
+			"import": "{ setInstances }",
+			"ignore": [
+				"three"
+			],
+			"limit": "550 B"
+		},
+		{
+			"name": "three: SteeringHelper",
+			"path": "dist/three.js",
+			"import": "{ SteeringHelper }",
+			"ignore": [
+				"three"
+			],
+			"limit": "1.75 kB"
+		},
+		{
+			"name": "three: everything",
+			"path": "dist/three.js",
+			"import": "*",
+			"ignore": [
+				"three"
+			],
+			"limit": "2.8 kB"
 		}
 	]
 }

@@ -22,7 +22,7 @@ export class Stage {
 	};
 	private readonly canvas: HTMLCanvasElement;
 	private readonly draw: Draw;
-	private scene?: Scene;
+	private scene: Scene | undefined;
 	private values: Values = {};
 	private frame = 0;
 	private last = 0;
@@ -54,6 +54,13 @@ export class Stage {
 		this.draw.showVectors = show;
 	}
 
+	/** Stops the frame loop, while a 3D demo plays. */
+	stop() {
+		cancelAnimationFrame(this.frame);
+		this.frame = 0;
+		this.scene = undefined;
+	}
+
 	/** Plays `scene`, whose sliders write into `values`. */
 	play(scene: Scene, values: Values) {
 		this.scene = scene;
@@ -64,7 +71,12 @@ export class Stage {
 		}
 	}
 
-	private resize() {
+	/**
+	 * Fits the world to the canvas. Called on its own when the canvas
+	 * resizes; call it before creating a scene on a canvas just shown, as
+	 * the observer only reports after the first frame.
+	 */
+	resize() {
 		const { canvas, draw, world } = this;
 		const rect = canvas.getBoundingClientRect();
 		const dpr = window.devicePixelRatio || 1;
