@@ -86,12 +86,10 @@
 		<div class="layout">
 			<nav class="demos" aria-label="Demos">
 				<div class="switcher">
-					<a
-						id="previous"
-						class="step"
-						href="{{previousUrl}}"
-						aria-label="Previous demo: {{previousTitle}}"
-					>
+					<a id="previous" class="step" href="{{previousUrl}}">
+						<span class="sr-only" id="previous-label"
+							>Previous demo: {{previousTitle}}</span
+						>
 						<svg viewBox="0 0 16 16" aria-hidden="true">
 							<path d="M10 3 5 8l5 5" />
 						</svg>
@@ -101,12 +99,10 @@
 							{{options}}
 						</select>
 					</span>
-					<a
-						id="next"
-						class="step"
-						href="{{nextUrl}}"
-						aria-label="Next demo: {{nextTitle}}"
-					>
+					<a id="next" class="step" href="{{nextUrl}}">
+						<span class="sr-only" id="next-label"
+							>Next demo: {{nextTitle}}</span
+						>
 						<svg viewBox="0 0 16 16" aria-hidden="true">
 							<path d="m6 3 5 5-5 5" />
 						</svg>

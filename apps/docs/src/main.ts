@@ -57,6 +57,8 @@ const list = element("demo-list");
 const select = element<HTMLSelectElement>("demo-select");
 const previous = element<HTMLAnchorElement>("previous");
 const next = element<HTMLAnchorElement>("next");
+const previousLabel = element("previous-label");
+const nextLabel = element("next-label");
 const title = element("title");
 const summary = element("summary");
 const hint = element("hint");
@@ -155,12 +157,9 @@ const show = () => {
 	select.value = demo.id;
 	const around = neighbors(demo.id);
 	previous.href = `/${around.previous.id}/`;
-	previous.setAttribute(
-		"aria-label",
-		`Previous demo: ${around.previous.title}`,
-	);
+	previousLabel.textContent = `Previous demo: ${around.previous.title}`;
 	next.href = `/${around.next.id}/`;
-	next.setAttribute("aria-label", `Next demo: ${around.next.title}`);
+	nextLabel.textContent = `Next demo: ${around.next.title}`;
 	title.textContent = demo.title;
 	summary.textContent = demo.summary;
 	hint.textContent = demo.hint;
