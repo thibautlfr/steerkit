@@ -79,9 +79,12 @@ pnpm -F docs dev                # demos, aliased to the library's sources
   inline, and its inlining budget runs out in a big frame. So: no helper
   call with numbers in a per-neighbor loop (`neighbors.ts` and `leader.ts`
   run one function with a `kind` switch, all in locals), no module-level
-  scratch vectors, no `Infinity` mixed into a computed value. The allocation
-  tests catch it only if they run the code the way a frame does: the bench
-  is the second check.
+  scratch vectors, no `Infinity` mixed into a computed value. Only the
+  smallest helpers (`norm`, `set`) are always inlined; `desire` is not, so
+  `keepAway` does its maths in locals. The allocation tests catch it only
+  if they run the code the way a frame does: the bench is the second check.
+  The amount depends on when V8 compiles in the background
+  (`--no-concurrent-recompilation` hides it): bench with the default flags.
 - pnpm 11 refuses dependencies published less than a day ago
   (`minimumReleaseAge`): pin an older version rather than adding an
   exclusion.
