@@ -140,6 +140,51 @@ export const pages: Page[] = [
 		goal: "make characters move in formation around a leader, each keeping its own slot relative to the leader's heading (offsetPursuit)",
 	},
 	{
+		id: "obstacle-avoidance",
+		title: "Obstacle avoidance",
+		summary:
+			"The agents go to the pointer through a field of rocks. Each one looks lookAhead seconds ahead, in a corridor as wide as itself (shaded for the highlighted agent): of the rocks it would hit, the nearest makes it turn toward the direction that just clears it, the wider the nearer. Avoidance comes first and weighs 3: with the pointer behind a rock, a weaker one would be cancelled by the pull toward it. Lower its weight to see the agents run into the rocks.",
+		description:
+			"Interactive demo of obstacle avoidance, Craig Reynolds' steering behavior: steer around the rocks in the way. Detection corridor drawn, steerkit code.",
+		goal: "make characters steer around obstacles in their way (avoidObstacles), with the obstacles as circles or spheres from the project's own scene",
+	},
+	{
+		id: "collision-avoidance",
+		title: "Collision avoidance",
+		summary:
+			"Two streams of agents cross, and the pointer walks through them. Each agent predicts when it would pass closest to every other, and dodges the soonest one it would bump into: two agents head-on both turn right, and pass. Turn it off to see them run into each other: the counter shows how often two come within reach.",
+		description:
+			"Interactive demo of unaligned collision avoidance, Reynolds' steering behavior: predict and dodge the other movers. Live parameters and code.",
+		goal: "make moving characters dodge each other before they collide, e.g. pedestrians crossing (avoidCollisions), with the spatial grid if there are hundreds",
+	},
+	{
+		id: "containment",
+		title: "Containment",
+		summary:
+			"The agents wander in a box. When one would cross the margin (dashed) within lookAhead seconds, it turns back toward the inside at full speed, keeping its velocity along the wall: it slides off the walls rather than bouncing. Inside the margin, the force is zero, and wander has the agent to itself.",
+		description:
+			"Interactive demo of containment, Craig Reynolds' steering behavior: keep agents inside a box, turning back before the walls. Live steerkit code.",
+		goal: "keep characters inside an area, e.g. a room, an arena or the screen, turning back smoothly before the edges (stayWithin)",
+	},
+	{
+		id: "path-following",
+		title: "Path following",
+		summary:
+			"The agents follow a loop, like cars on a road: the path has a radius (the shaded band). Each one checks where it will be in lookAhead seconds: still on the road and heading along it, it goes its own way; off it, it steers back to a point further along. Separation keeps them from queuing in single file.",
+		description:
+			"Interactive demo of path following, Craig Reynolds' steering behavior: stay within a radius of a path, open or closed. Live parameters and code.",
+		goal: "make characters follow a route, e.g. a patrol, a race track or a guide along a trail, from a list of points (followPath)",
+	},
+	{
+		id: "flow-field",
+		title: "Flow field",
+		summary:
+			"A grid of directions, slowly changing, and the pointer stirs a vortex into it. Each agent reads the flow where it will be in lookAhead seconds, and heads that way at full speed: a current, a wind, crowds following a map. The field is any function: here a grid, looked up in a few lines.",
+		description:
+			"Interactive demo of flow field following, Reynolds' steering behavior: go with a current read from a grid of directions. Live steerkit code.",
+		goal: "make characters follow a flow field, e.g. a current, a wind or a map of directions to a goal (followFlow), with the field from the project's own data",
+	},
+	{
 		id: "combine",
 		title: "Combining",
 		summary:

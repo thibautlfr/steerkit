@@ -19,6 +19,10 @@ const SOURCES = [
 	"neighbors.ts",
 	"grid.ts",
 	"leader.ts",
+	"avoid.ts",
+	"bounds.ts",
+	"path.ts",
+	"flow.ts",
 	"combine.ts",
 	"step.ts",
 ];
@@ -56,7 +60,7 @@ const example = (): string =>
 
 export const llms = (pages: Page[]): string => `# steerkit
 
-> Craig Reynolds' steering behaviors for autonomous characters (seek, flee, arrive, pursue, evade, wander, keepAway, separation, cohesion, alignment, follow, offsetPursuit…) as small, typed, engine-agnostic functions for JavaScript and TypeScript. They work on the project's own \`{ x, y, z }\` objects, \`THREE.Vector3\` included, with no dependency and no allocation per frame.
+> Craig Reynolds' steering behaviors for autonomous characters (seek, flee, arrive, pursue, evade, wander, keepAway, separation, cohesion, alignment, follow, offsetPursuit, avoidObstacles, avoidCollisions, stayWithin, followPath, followFlow…) as small, typed, engine-agnostic functions for JavaScript and TypeScript. They work on the project's own \`{ x, y, z }\` objects, \`THREE.Vector3\` included, with no dependency and no allocation per frame.
 
 Install with the project's package manager: \`npm install steerkit\` (ESM only, TypeScript types included).
 
@@ -69,7 +73,8 @@ Install with the project's package manager: \`npm install steerkit\` (ESM only, 
 - \`wander\` needs a state per agent, from \`createWanderState()\`, kept across frames.
 - Groups (flocking): \`separation\`, \`cohesion\` and \`alignment\` take the agent's neighbors as any list of \`{ position, velocity }\`; the whole crowd works, the agent itself included (it is recognized by its \`position\` object and ignored). Up to a few dozen agents, pass the crowd's array as it is. Beyond, use the spatial grid: create \`createGrid({ cellSize })\` (cellSize about the largest radius queried) and \`createNeighbors()\` once; each frame, call \`updateGrid(grid, agents)\` once after moving them, then per agent \`queryGrid(grid, agent.position, radius, near)\` and pass its result as the neighbors. Never build a new array of neighbors per frame.
 - Leaders: \`follow\` (a spot behind the leader, stepping out of its way) and \`offsetPursuit\` (a slot in a formation, \`ahead\` along the leader's heading and \`side\` to its right) take the leader as any \`{ position, velocity }\`. Create one options object per follower or slot, once. Combine \`follow\` with \`separation\` among the followers.
-- 2D: keep \`z\` at 0 everywhere; pass \`plane: "xy"\` to \`wander\`, \`follow\`, \`offsetPursuit\` and \`createGrid\` for a 2D canvas, \`plane: "xz"\` for characters on the ground in 3D. Without \`plane\`, \`wander\` roams on a sphere, in all three axes, and the leader behaviors take +y as up.
+- The environment: \`avoidObstacles\` takes obstacles as any list of \`{ position, radius }\` (spheres, circles in 2D), \`avoidCollisions\` the other movers as any list of \`{ position, velocity }\` (the whole crowd, the agent itself included, or what \`queryGrid\` returns: query within about \`2 × maxSpeed × lookAhead + 2 × radius\`). \`stayWithin\` takes a box \`{ min, max }\` (\`THREE.Box3\` as is; give it no depth in 2D), \`followPath\` a list of points (\`closed: true\` for a loop), \`followFlow\` a function \`(position, out) => out\` writing the flow's direction, which must read \`position\` before writing \`out\` and allocate nothing. Their \`lookAhead\` is in seconds. Avoidance and containment return a zero force when nothing is in the way: put them first in \`prioritize\` (or \`addWithin\`), before what moves the agent.
+- 2D: keep \`z\` at 0 everywhere; pass \`plane: "xy"\` to \`wander\`, \`follow\`, \`offsetPursuit\`, \`avoidObstacles\`, \`avoidCollisions\` and \`createGrid\` for a 2D canvas, \`plane: "xz"\` for characters on the ground in 3D. Without \`plane\`, \`wander\` roams on a sphere, in all three axes, and the leader and avoidance behaviors take +y as up.
 - Scale \`maxSpeed\`, \`maxForce\` and distances (\`slowingDistance\`, \`radius\`) to the project's units: the demos use a world about 10 units tall.
 - steerkit only moves a point. Turning the model to face its velocity is up to the project (in Three.js: \`mesh.lookAt(tmp.copy(mesh.position).add(velocity))\`).
 - When \`maxSpeed\` drops suddenly (the end of a speed boost), pass \`{ overspeedDamping: seconds }\` to \`step\` so the extra speed fades out instead of being cut in one frame.

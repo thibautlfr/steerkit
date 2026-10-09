@@ -1,6 +1,15 @@
 import type { Demo, Param, Values } from "./demo.ts";
+import {
+	collisionAvoidanceDemo,
+	obstacleAvoidanceDemo,
+} from "./demos/avoid.ts";
 import { arriveDemo, fleeDemo, keepAwayDemo, seekDemo } from "./demos/basic.ts";
 import { combineDemo } from "./demos/combine.ts";
+import {
+	containmentDemo,
+	flowFieldDemo,
+	pathFollowingDemo,
+} from "./demos/environment.ts";
 import { leaderFollowingDemo, offsetPursuitDemo } from "./demos/leader.ts";
 import {
 	alignmentDemo,
@@ -29,6 +38,11 @@ const demos: Demo[] = [
 	flockingDemo,
 	leaderFollowingDemo,
 	offsetPursuitDemo,
+	obstacleAvoidanceDemo,
+	collisionAvoidanceDemo,
+	containmentDemo,
+	pathFollowingDemo,
+	flowFieldDemo,
 	combineDemo,
 	speedLimitDemo,
 ];
