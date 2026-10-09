@@ -4,6 +4,7 @@ import { combineDemo } from "./demos/combine.ts";
 import { evadeDemo, pursueDemo } from "./demos/prediction.ts";
 import { speedLimitDemo } from "./demos/speed-limit.ts";
 import { wanderDemo } from "./demos/wander.ts";
+import { highlight } from "./highlight.ts";
 import { Stage } from "./stage.ts";
 
 const demos: Demo[] = [
@@ -96,7 +97,7 @@ const show = () => {
 		demo.params.map((p) => [p.key, p.value]),
 	);
 	const render = () => {
-		code.textContent = demo.code(values);
+		code.innerHTML = highlight(demo.code(values));
 	};
 	form.replaceChildren(...demo.params.map((p) => control(p, values, render)));
 	render();
@@ -105,3 +106,17 @@ const show = () => {
 
 window.addEventListener("hashchange", show);
 show();
+
+// The star count on the GitHub button, when the API answers (it allows 60
+// unauthenticated requests an hour per visitor)
+const stars = element("stars");
+fetch("https://api.github.com/repos/thibautlfr/steerkit")
+	.then((response) => (response.ok ? response.json() : undefined))
+	.then((repo?: { stargazers_count?: number }) => {
+		const count = repo?.stargazers_count;
+		if (count === undefined) return;
+		stars.textContent =
+			count >= 1000 ? `${(count / 1000).toFixed(1)}k` : String(count);
+		stars.hidden = false;
+	})
+	.catch(() => {});

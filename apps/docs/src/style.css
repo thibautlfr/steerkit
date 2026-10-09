@@ -13,6 +13,12 @@
 	--zone: rgba(184, 50, 128, 0.08);
 	--trail: rgba(29, 31, 36, 0.12);
 	--code-bg: #f0eee7;
+	--tok-comment: #8a8f99;
+	--tok-keyword: #a626a4;
+	--tok-string: #3f8a2b;
+	--tok-number: #c2610c;
+	--tok-call: #2f62c9;
+	--tok-key: #b4344d;
 	color-scheme: light;
 }
 
@@ -32,6 +38,12 @@
 		--zone: rgba(240, 117, 182, 0.1);
 		--trail: rgba(232, 230, 225, 0.14);
 		--code-bg: #23262e;
+		--tok-comment: #7d828c;
+		--tok-keyword: #d18ef0;
+		--tok-string: #98c379;
+		--tok-number: #e5a065;
+		--tok-call: #7aa8ff;
+		--tok-key: #ef8a9a;
 		color-scheme: dark;
 	}
 }
@@ -55,31 +67,122 @@ a {
 	color: var(--accent);
 }
 
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
+}
+
 .top {
-	display: flex;
-	flex-wrap: wrap;
-	align-items: baseline;
-	gap: 0.25rem 1rem;
-	padding: 1rem 1.5rem;
 	border-bottom: 1px solid var(--border);
+	background: var(--surface);
+}
+
+.top-inner {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
+	max-width: 76rem;
+	margin: 0 auto;
+	padding: 0.85rem 1.5rem;
 }
 
 .brand {
-	font-weight: 700;
-	font-size: 1.25rem;
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	min-width: 0;
 	color: var(--text);
 	text-decoration: none;
 }
 
+.logo {
+	flex: none;
+	width: 2.25rem;
+	height: 2.25rem;
+}
+
+.logo rect {
+	fill: var(--accent);
+}
+
+.logo path {
+	fill: var(--surface);
+}
+
+.brand-text {
+	display: grid;
+	min-width: 0;
+}
+
+.name {
+	font-weight: 700;
+	font-size: 1.2rem;
+	line-height: 1.2;
+	letter-spacing: -0.01em;
+}
+
 .tagline {
-	margin: 0;
+	font-size: 0.9rem;
+	line-height: 1.35;
 	color: var(--muted);
-	flex: 1;
 }
 
 .links {
 	display: flex;
-	gap: 1rem;
+	flex: none;
+	align-items: center;
+	gap: 0.6rem;
+}
+
+.links svg {
+	width: 1.15rem;
+	height: 1.15rem;
+	fill: currentColor;
+}
+
+.icon-link,
+.github {
+	display: inline-flex;
+	align-items: center;
+	height: 2.25rem;
+	border: 1px solid var(--border);
+	border-radius: 0.5rem;
+	color: var(--text);
+	text-decoration: none;
+	font-size: 0.9rem;
+	font-weight: 600;
+	transition:
+		background-color 0.15s,
+		border-color 0.15s;
+}
+
+.icon-link {
+	justify-content: center;
+	width: 2.25rem;
+}
+
+.icon-link:hover,
+.github:hover {
+	background: var(--bg);
+	border-color: var(--muted);
+}
+
+.github {
+	gap: 0.45rem;
+	padding: 0 0.75rem;
+}
+
+.github .count {
+	margin-left: 0.1rem;
+	padding-left: 0.55rem;
+	border-left: 1px solid var(--border);
+	font-variant-numeric: tabular-nums;
+	color: var(--muted);
 }
 
 .layout {
@@ -243,14 +346,42 @@ canvas {
 	tab-size: 2;
 }
 
+.tok-comment {
+	color: var(--tok-comment);
+	font-style: italic;
+}
+
+.tok-keyword {
+	color: var(--tok-keyword);
+}
+
+.tok-string {
+	color: var(--tok-string);
+}
+
+.tok-number {
+	color: var(--tok-number);
+}
+
+.tok-call {
+	color: var(--tok-call);
+}
+
+.tok-key {
+	color: var(--tok-key);
+}
+
 @media (max-width: 52rem) {
-	.top {
-		padding: 1rem;
+	.top-inner {
+		padding: 0.75rem 1rem;
 	}
 
 	.tagline {
-		order: 3;
-		flex-basis: 100%;
+		font-size: 0.8rem;
+	}
+
+	.github span:first-of-type {
+		display: none;
 	}
 
 	.layout {
