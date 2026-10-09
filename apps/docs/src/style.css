@@ -12,6 +12,9 @@
 	--target: #b83280;
 	--zone: rgba(184, 50, 128, 0.08);
 	--trail: rgba(29, 31, 36, 0.12);
+	--water: #dcecef;
+	--sand: #d8c49a;
+	--shark: #55606e;
 	--code-bg: #f0eee7;
 	--tok-comment: #8a8f99;
 	--tok-keyword: #a626a4;
@@ -37,6 +40,9 @@
 		--target: #f075b6;
 		--zone: rgba(240, 117, 182, 0.1);
 		--trail: rgba(232, 230, 225, 0.14);
+		--water: #10212a;
+		--sand: #4a4234;
+		--shark: #9aa6b4;
 		--code-bg: #23262e;
 		--tok-comment: #7d828c;
 		--tok-keyword: #d18ef0;
@@ -344,6 +350,15 @@ canvas {
 	aspect-ratio: 16 / 9;
 	touch-action: none;
 	cursor: crosshair;
+}
+
+/* display: block above would show a hidden canvas */
+canvas[hidden] {
+	display: none;
+}
+
+#canvas-3d {
+	cursor: grab;
 }
 
 .legend {
