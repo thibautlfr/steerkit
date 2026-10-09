@@ -24,6 +24,7 @@ import {
 	queryGrid,
 	seek,
 	separation,
+	stayWithin,
 	step,
 	updateGrid,
 	type Vec3,
@@ -133,6 +134,14 @@ const behaviors = (
 			agent,
 			crowd,
 			{ radius: Math.abs(distance), lookAhead: distance, plane: "xy" },
+			{ x: 0, y: 0, z: 0 },
+		),
+		// A box from target to other, inverted on the axes where other is
+		// lower
+		stayWithin(
+			agent,
+			{ min: target, max: other },
+			{ margin: distance, lookAhead: Math.abs(distance) },
 			{ x: 0, y: 0, z: 0 },
 		),
 	];

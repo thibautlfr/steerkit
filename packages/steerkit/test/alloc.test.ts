@@ -27,6 +27,7 @@ import {
 	queryGrid,
 	seek,
 	separation,
+	stayWithin,
 	step,
 	updateGrid,
 	wander,
@@ -82,6 +83,8 @@ describe.runIf(allocated() !== undefined)("allocation", () => {
 		{ position: vec(4, -0.3, 0), radius: 1 },
 	];
 	const avoiding = { radius: 0.5, lookAhead: 30, plane: "xy" as const };
+	const room = { min: vec(-1, -1, -1), max: vec(1, 1, 1) };
+	const walls = { margin: 0.5, lookAhead: 1 };
 	const force = vec();
 	const tmp = vec();
 
@@ -102,6 +105,7 @@ describe.runIf(allocated() !== undefined)("allocation", () => {
 		["follow", () => follow(a, quarry, behind, force)],
 		["avoidObstacles", () => avoidObstacles(a, rocks, avoiding, force)],
 		["avoidCollisions", () => avoidCollisions(a, crowd, avoiding, force)],
+		["stayWithin", () => stayWithin(a, room, walls, force)],
 		["zero + add", () => add(zero(force), target, 2)],
 		["addWithin", () => addWithin(zero(force), 3, target)],
 		["step", () => step(a, force, 0.016, soft)],

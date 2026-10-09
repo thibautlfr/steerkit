@@ -15,6 +15,7 @@ export {
 	avoidObstacles,
 } from "./avoid.ts";
 export { arrive, brake, flee, keepAway, seek } from "./basic.ts";
+export { type StayWithinOptions, stayWithin } from "./bounds.ts";
 export {
 	add,
 	addWithin,
@@ -47,6 +48,7 @@ export { evade, type PredictionOptions, pursue } from "./prediction.ts";
 export { type StepOptions, step } from "./step.ts";
 export type {
 	Agent,
+	Bounds,
 	Mover,
 	Obstacle,
 	Plane,

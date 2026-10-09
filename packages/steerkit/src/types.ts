@@ -40,3 +40,6 @@ export type Plane = "xy" | "xz" | "yz";
  * `position` lets a spatial grid sort obstacles like a crowd.
  */
 export type Obstacle = { position: Vec3; radius: number };
+
+/** An axis-aligned box, for {@link stayWithin}: `THREE.Box3` fits as is. */
+export type Bounds = { min: Vec3; max: Vec3 };
