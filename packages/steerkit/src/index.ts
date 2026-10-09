@@ -23,6 +23,7 @@ export {
 	prioritize,
 	zero,
 } from "./combine.ts";
+export { type FollowFlowOptions, followFlow } from "./flow.ts";
 export {
 	createGrid,
 	createNeighbors,
@@ -50,6 +51,7 @@ export { type StepOptions, step } from "./step.ts";
 export type {
 	Agent,
 	Bounds,
+	FlowField,
 	Mover,
 	Obstacle,
 	Plane,

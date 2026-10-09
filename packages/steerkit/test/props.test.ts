@@ -17,6 +17,7 @@ import {
 	evade,
 	flee,
 	follow,
+	followFlow,
 	followPath,
 	keepAway,
 	offsetPursuit,
@@ -161,6 +162,17 @@ const behaviors = (
 			agent,
 			[other],
 			{ radius: distance, lookAhead: Math.abs(distance) },
+			{ x: 0, y: 0, z: 0 },
+		),
+		followFlow(
+			agent,
+			(_, out) => {
+				out.x = other.x;
+				out.y = other.y;
+				out.z = other.z;
+				return out;
+			},
+			{ lookAhead: distance },
 			{ x: 0, y: 0, z: 0 },
 		),
 	];

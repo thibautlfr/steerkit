@@ -21,6 +21,7 @@ import {
 	evade,
 	flee,
 	follow,
+	followFlow,
 	followPath,
 	keepAway,
 	offsetPursuit,
@@ -88,6 +89,15 @@ describe.runIf(allocated() !== undefined)("allocation", () => {
 	const walls = { margin: 0.5, lookAhead: 1 };
 	const road = [vec(0, 0, 0), vec(5, 0, 0), vec(5, 5, 0), vec(0, 5, 0)];
 	const along = { radius: 0.5, lookAhead: 1, closed: true };
+	// A field that allocates nothing either: a swirl around the origin
+	const swirl = (p: { x: number; y: number }, out: typeof target) => {
+		const x = p.x;
+		out.x = -p.y;
+		out.y = x;
+		out.z = 0;
+		return out;
+	};
+	const flowing = { lookAhead: 0.5 };
 	const force = vec();
 	const tmp = vec();
 
@@ -110,6 +120,7 @@ describe.runIf(allocated() !== undefined)("allocation", () => {
 		["avoidCollisions", () => avoidCollisions(a, crowd, avoiding, force)],
 		["stayWithin", () => stayWithin(a, room, walls, force)],
 		["followPath", () => followPath(a, road, along, force)],
+		["followFlow", () => followFlow(a, swirl, flowing, force)],
 		["zero + add", () => add(zero(force), target, 2)],
 		["addWithin", () => addWithin(zero(force), 3, target)],
 		["step", () => step(a, force, 0.016, soft)],

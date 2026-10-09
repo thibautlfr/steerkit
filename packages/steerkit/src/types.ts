@@ -43,3 +43,10 @@ export type Obstacle = { position: Vec3; radius: number };
 
 /** An axis-aligned box, for {@link stayWithin}: `THREE.Box3` fits as is. */
 export type Bounds = { min: Vec3; max: Vec3 };
+
+/**
+ * A flow, for {@link followFlow}: writes into `out` the direction to follow
+ * at `position`, and returns it. `out` may be `position` itself: read it
+ * before writing. Its length doesn't matter, a null one means no flow.
+ */
+export type FlowField = (position: Vec3, out: Vec3) => Vec3;
