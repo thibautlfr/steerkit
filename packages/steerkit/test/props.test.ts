@@ -7,6 +7,8 @@ import {
 	type Agent,
 	alignment,
 	arrive,
+	avoidCollisions,
+	avoidObstacles,
 	brake,
 	cohesion,
 	createGrid,
@@ -115,6 +117,22 @@ const behaviors = (
 			agent,
 			mover,
 			{ distance, slowingDistance: -distance, plane: "xy" },
+			{ x: 0, y: 0, z: 0 },
+		),
+		avoidObstacles(
+			agent,
+			[
+				{ position: target, radius: Math.abs(distance) },
+				{ position: other, radius: distance },
+				{ position: agent.position, radius: 1 },
+			],
+			{ radius: distance, lookAhead: Math.abs(distance), plane: "xy" },
+			{ x: 0, y: 0, z: 0 },
+		),
+		avoidCollisions(
+			agent,
+			crowd,
+			{ radius: Math.abs(distance), lookAhead: distance, plane: "xy" },
 			{ x: 0, y: 0, z: 0 },
 		),
 	];

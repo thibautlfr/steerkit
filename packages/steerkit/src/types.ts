@@ -34,3 +34,9 @@ export type Term = readonly [force: Vec3, weight: number];
 
 /** A plane to keep a behavior in, for 2D canvases (`"xy"`) or ground characters (`"xz"`). */
 export type Plane = "xy" | "xz" | "yz";
+
+/**
+ * A sphere (a circle in 2D) to steer around, for {@link avoidObstacles}. Its
+ * `position` lets a spatial grid sort obstacles like a crowd.
+ */
+export type Obstacle = { position: Vec3; radius: number };

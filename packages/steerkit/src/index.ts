@@ -9,6 +9,11 @@
  * @packageDocumentation
  */
 
+export {
+	type AvoidanceOptions,
+	avoidCollisions,
+	avoidObstacles,
+} from "./avoid.ts";
 export { arrive, brake, flee, keepAway, seek } from "./basic.ts";
 export {
 	add,
@@ -40,7 +45,14 @@ export {
 } from "./neighbors.ts";
 export { evade, type PredictionOptions, pursue } from "./prediction.ts";
 export { type StepOptions, step } from "./step.ts";
-export type { Agent, Mover, Plane, Term, Vec3 } from "./types.ts";
+export type {
+	Agent,
+	Mover,
+	Obstacle,
+	Plane,
+	Term,
+	Vec3,
+} from "./types.ts";
 export {
 	createWanderState,
 	type WanderOptions,

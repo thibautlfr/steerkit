@@ -10,6 +10,8 @@ import {
 	addWithin,
 	alignment,
 	arrive,
+	avoidCollisions,
+	avoidObstacles,
 	blend,
 	brake,
 	cohesion,
@@ -75,6 +77,11 @@ describe.runIf(allocated() !== undefined)("allocation", () => {
 	const seen = { radius: 10, fieldOfView: 4 };
 	const slot = { ahead: -1, side: 1, slowingDistance: 2 };
 	const behind = { distance: 1, slowingDistance: 2 };
+	const rocks = [
+		{ position: vec(2, 0.2, 0), radius: 0.5 },
+		{ position: vec(4, -0.3, 0), radius: 1 },
+	];
+	const avoiding = { radius: 0.5, lookAhead: 30, plane: "xy" as const };
 	const force = vec();
 	const tmp = vec();
 
@@ -93,6 +100,8 @@ describe.runIf(allocated() !== undefined)("allocation", () => {
 		["alignment", () => alignment(a, crowd, seen, force)],
 		["offsetPursuit", () => offsetPursuit(a, quarry, slot, force)],
 		["follow", () => follow(a, quarry, behind, force)],
+		["avoidObstacles", () => avoidObstacles(a, rocks, avoiding, force)],
+		["avoidCollisions", () => avoidCollisions(a, crowd, avoiding, force)],
 		["zero + add", () => add(zero(force), target, 2)],
 		["addWithin", () => addWithin(zero(force), 3, target)],
 		["step", () => step(a, force, 0.016, soft)],
