@@ -5,16 +5,25 @@ import fc from "fast-check";
 import { describe, expect, it } from "vitest";
 import {
 	type Agent,
+	alignment,
 	arrive,
 	brake,
+	cohesion,
+	createGrid,
+	createNeighbors,
 	createWanderState,
 	evade,
 	flee,
+	follow,
 	keepAway,
+	offsetPursuit,
 	prioritize,
 	pursue,
+	queryGrid,
 	seek,
+	separation,
 	step,
+	updateGrid,
 	type Vec3,
 	wander,
 } from "../src/index.ts";
@@ -65,6 +74,9 @@ const behaviors = (
 	distance: number,
 ): Vec3[] => {
 	const mover = { position: target, velocity: other };
+	// The agent itself included, as a whole crowd would be
+	const crowd = [agent, mover, { position: other, velocity: target }];
+	const seen = { radius: distance, fieldOfView: Math.abs(distance) };
 	return [
 		seek(agent, target, { x: 0, y: 0, z: 0 }),
 		flee(agent, target, { x: 0, y: 0, z: 0 }),
@@ -76,6 +88,33 @@ const behaviors = (
 			agent,
 			mover,
 			{ maxPrediction: Math.abs(distance) },
+			{ x: 0, y: 0, z: 0 },
+		),
+		separation(agent, crowd, { radius: distance }, { x: 0, y: 0, z: 0 }),
+		separation(agent, crowd, seen, { x: 0, y: 0, z: 0 }),
+		cohesion(agent, crowd, seen, { x: 0, y: 0, z: 0 }),
+		alignment(agent, crowd, seen, { x: 0, y: 0, z: 0 }),
+		offsetPursuit(
+			agent,
+			mover,
+			{
+				ahead: distance,
+				side: -distance,
+				slowingDistance: distance,
+				plane: "xy",
+			},
+			{ x: 0, y: 0, z: 0 },
+		),
+		follow(
+			agent,
+			mover,
+			{ distance, slowingDistance: distance, plane: "xy" },
+			{ x: 0, y: 0, z: 0 },
+		),
+		follow(
+			agent,
+			mover,
+			{ distance, slowingDistance: -distance, plane: "xy" },
 			{ x: 0, y: 0, z: 0 },
 		),
 	];
@@ -228,6 +267,45 @@ describe("step", () => {
 					speed <= Math.max(agent.maxSpeed, previous) * (1 + 1e-9) + 1e-9
 				);
 			}),
+		);
+	});
+});
+
+describe("queryGrid", () => {
+	it("finds what a scan of every item finds", () => {
+		fc.assert(
+			fc.property(
+				fc.array(vec3, { maxLength: 60 }),
+				vec3,
+				fc.double({ min: 0, max: 500, noNaN: true }),
+				fc.double({ min: 1e-3, max: 300, noNaN: true }),
+				fc.constantFrom("xy", "xz", "yz", undefined),
+				(positions, at, radius, cellSize, plane) => {
+					const items = positions.map((position) => ({ position }));
+					const grid = createGrid<{ position: Vec3 }>({
+						cellSize,
+						...(plane && { plane }),
+					});
+					const out = queryGrid(
+						updateGrid(grid, items),
+						at,
+						radius,
+						createNeighbors(),
+					);
+					const found = new Set(Array.from(out));
+					const expected = items.filter(
+						({ position: p }) =>
+							Math.sqrt(
+								(p.x - at.x) ** 2 + (p.y - at.y) ** 2 + (p.z - at.z) ** 2,
+							) <= radius,
+					);
+					return (
+						out.length === expected.length &&
+						found.size === expected.length &&
+						expected.every((item) => found.has(item))
+					);
+				},
+			),
 		);
 	});
 });

@@ -16,6 +16,9 @@ const SOURCES = [
 	"basic.ts",
 	"prediction.ts",
 	"wander.ts",
+	"neighbors.ts",
+	"grid.ts",
+	"leader.ts",
 	"combine.ts",
 	"step.ts",
 ];
@@ -53,7 +56,7 @@ const example = (): string =>
 
 export const llms = (pages: Page[]): string => `# steerkit
 
-> Craig Reynolds' steering behaviors for autonomous characters (seek, flee, arrive, pursue, evade, wander, keepAway…) as small, typed, engine-agnostic functions for JavaScript and TypeScript. They work on the project's own \`{ x, y, z }\` objects, \`THREE.Vector3\` included, with no dependency and no allocation per frame.
+> Craig Reynolds' steering behaviors for autonomous characters (seek, flee, arrive, pursue, evade, wander, keepAway, separation, cohesion, alignment, follow, offsetPursuit…) as small, typed, engine-agnostic functions for JavaScript and TypeScript. They work on the project's own \`{ x, y, z }\` objects, \`THREE.Vector3\` included, with no dependency and no allocation per frame.
 
 Install with the project's package manager: \`npm install steerkit\` (ESM only, TypeScript types included).
 
@@ -64,7 +67,9 @@ Install with the project's package manager: \`npm install steerkit\` (ESM only, 
 - Each frame, per agent: compute the behaviors, combine their forces, then call \`step(agent, force, dt)\` once. \`dt\` is in seconds; clamp it (\`Math.min(dt, 1 / 20)\`) so a frame after the tab was in the background doesn't teleport agents.
 - Combine with \`blend(out, [force, weight], …)\` (a weighted sum) or \`prioritize(out, agent.maxForce, …forces)\` (in order of priority within a budget, so a lesser force can't cancel an urgent one). For hundreds of agents, use their allocation-free forms: \`zero(out)\` then \`add(out, force, weight)\` or \`addWithin(out, budget, force)\`, with one temporary vector reused for every behavior. In such loops, also hoist options objects (\`{ slowingDistance: 1.2 }\`) out of the loop as constants.
 - \`wander\` needs a state per agent, from \`createWanderState()\`, kept across frames.
-- 2D: keep \`z\` at 0 everywhere; pass \`plane: "xy"\` to \`wander\` for a 2D canvas, \`plane: "xz"\` for characters on the ground in 3D. Without \`plane\`, \`wander\` roams on a sphere, in all three axes.
+- Groups (flocking): \`separation\`, \`cohesion\` and \`alignment\` take the agent's neighbors as any list of \`{ position, velocity }\`; the whole crowd works, the agent itself included (it is recognized by its \`position\` object and ignored). Up to a few dozen agents, pass the crowd's array as it is. Beyond, use the spatial grid: create \`createGrid({ cellSize })\` (cellSize about the largest radius queried) and \`createNeighbors()\` once; each frame, call \`updateGrid(grid, agents)\` once after moving them, then per agent \`queryGrid(grid, agent.position, radius, near)\` and pass its result as the neighbors. Never build a new array of neighbors per frame.
+- Leaders: \`follow\` (a spot behind the leader, stepping out of its way) and \`offsetPursuit\` (a slot in a formation, \`ahead\` along the leader's heading and \`side\` to its right) take the leader as any \`{ position, velocity }\`. Create one options object per follower or slot, once. Combine \`follow\` with \`separation\` among the followers.
+- 2D: keep \`z\` at 0 everywhere; pass \`plane: "xy"\` to \`wander\`, \`follow\`, \`offsetPursuit\` and \`createGrid\` for a 2D canvas, \`plane: "xz"\` for characters on the ground in 3D. Without \`plane\`, \`wander\` roams on a sphere, in all three axes, and the leader behaviors take +y as up.
 - Scale \`maxSpeed\`, \`maxForce\` and distances (\`slowingDistance\`, \`radius\`) to the project's units: the demos use a world about 10 units tall.
 - steerkit only moves a point. Turning the model to face its velocity is up to the project (in Three.js: \`mesh.lookAt(tmp.copy(mesh.position).add(velocity))\`).
 - When \`maxSpeed\` drops suddenly (the end of a speed boost), pass \`{ overspeedDamping: seconds }\` to \`step\` so the extra speed fades out instead of being cut in one frame.

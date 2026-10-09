@@ -86,6 +86,60 @@ export const pages: Page[] = [
 		goal: "make characters roam around naturally, in smooth random curves (wander): ambient creatures, idle NPCs, fireflies",
 	},
 	{
+		id: "separation",
+		title: "Separation",
+		summary:
+			"Each agent steers away from the neighbors it sees, harder from the nearest: every neighbor within the radius pushes along the line between them, weighted by 1/distance. The highlighted agent shows its neighborhood: the radius, and the field of view (neighbors behind it are ignored). Here it is blended with wander; set its weight to 0 to see the crowd without it.",
+		description:
+			"Interactive demo of separation, Reynolds' boids behavior: steer away from nearby neighbors to avoid crowding. Neighborhood drawn, steerkit code.",
+		goal: "make characters keep their distance from each other in a crowd (separation), with the neighbors from the project's own list of characters",
+	},
+	{
+		id: "cohesion",
+		title: "Cohesion",
+		summary:
+			"Each agent seeks the center of the neighbors it sees: what keeps a group together. On its own, cohesion clumps the agents into tight knots; flocking balances it with separation. Here it is blended with wander, so the groups keep moving.",
+		description:
+			"Interactive demo of cohesion, Reynolds' boids behavior: steer toward the center of nearby neighbors to stay together. Live steerkit code.",
+		goal: "make characters stay together in groups (cohesion), with the neighbors from the project's own list of characters",
+	},
+	{
+		id: "alignment",
+		title: "Alignment",
+		summary:
+			"Each agent steers toward the average velocity of the neighbors it sees: what makes a group head the same way. Starting in every direction, the agents line up into streams. Here it is blended with wander; a narrower field of view makes them follow those ahead rather than those around.",
+		description:
+			"Interactive demo of alignment, Reynolds' boids behavior: match the average heading of nearby neighbors. Field of view drawn, steerkit code.",
+		goal: "make characters move in the same direction as their neighbors (alignment), with the neighbors from the project's own list of characters",
+	},
+	{
+		id: "flocking",
+		title: "Flocking",
+		summary:
+			"Reynolds' boids: separation, alignment and cohesion together, and the pointer scares the flock. Finding the neighbors is the costly part: scanning the whole crowd costs n² distance checks, a spatial grid only looks at the nearby cells. Raise the count to 1,000 and switch between the two to see the time per frame.",
+		description:
+			"Boids in JavaScript with steerkit: separation, alignment and cohesion, and a spatial grid for 1,000 agents with no allocation. Live demo and code.",
+		goal: "make a crowd of characters flock like birds or fish (separation, alignment and cohesion), with steerkit's spatial grid to find the neighbors if there are hundreds",
+	},
+	{
+		id: "leader-following",
+		title: "Leader following",
+		summary:
+			"The followers keep a spot behind the leader and match its velocity once there. One that finds itself in the leader's way (the shaded zone ahead of it) steps aside, out of its path. Separation keeps the followers from piling up on the same spot.",
+		description:
+			"Interactive demo of leader following, Reynolds' steering behavior: follow behind a leader and step out of its way. Live parameters and code.",
+		goal: "make characters follow a leader, e.g. the player, staying behind it and out of its way (follow, with separation among the followers)",
+	},
+	{
+		id: "offset-pursuit",
+		title: "Offset pursuit",
+		summary:
+			"Each wingman keeps a slot in the leader's frame, ahead or behind along its heading and to its side: a formation. Once in its slot, it matches the leader's velocity; within slowingDistance of it, it eases in. The slots turn with the leader, so the V follows every turn.",
+		description:
+			"Interactive demo of offset pursuit, Reynolds' steering behavior: keep a slot relative to a leader, for formations. Live parameters and code.",
+		goal: "make characters move in formation around a leader, each keeping its own slot relative to the leader's heading (offsetPursuit)",
+	},
+	{
 		id: "combine",
 		title: "Combining",
 		summary:

@@ -114,6 +114,64 @@ export class Draw {
 		}
 	}
 
+	/**
+	 * What an agent sees: a disc of `radius`, or the slice of it within
+	 * `fieldOfView` (radians) around `heading` (radians).
+	 */
+	sector(
+		center: Vec3,
+		radius: number,
+		heading: number,
+		fieldOfView: number,
+		stroke: string,
+		fill: string,
+	) {
+		if (fieldOfView >= Math.PI * 2) {
+			this.circle(center, radius, stroke, fill, [4, 4]);
+			return;
+		}
+		const { ctx } = this;
+		ctx.beginPath();
+		ctx.moveTo(center.x, center.y);
+		ctx.arc(
+			center.x,
+			center.y,
+			radius,
+			heading - fieldOfView / 2,
+			heading + fieldOfView / 2,
+		);
+		ctx.closePath();
+		ctx.fillStyle = fill;
+		ctx.fill();
+		ctx.strokeStyle = stroke;
+		ctx.lineWidth = this.px(1.5);
+		ctx.setLineDash([this.px(4), this.px(4)]);
+		ctx.stroke();
+		ctx.setLineDash([]);
+	}
+
+	/** A filled polygon, for zones that aren't round. */
+	polygon(points: readonly Vec3[], fill: string) {
+		const { ctx } = this;
+		ctx.beginPath();
+		points.forEach((point, i) => {
+			if (i === 0) ctx.moveTo(point.x, point.y);
+			else ctx.lineTo(point.x, point.y);
+		});
+		ctx.closePath();
+		ctx.fillStyle = fill;
+		ctx.fill();
+	}
+
+	/** A line of text, its size in CSS pixels. */
+	text(at: Vec3, text: string, color: string, size = 13) {
+		const { ctx } = this;
+		ctx.font = `${this.px(size)}px ui-monospace, SFMono-Regular, Menlo, monospace`;
+		ctx.fillStyle = color;
+		ctx.textBaseline = "top";
+		ctx.fillText(text, at.x, at.y);
+	}
+
 	dot(center: Vec3, color: string, radius = 5) {
 		this.circle(center, this.px(radius), undefined, color);
 	}
