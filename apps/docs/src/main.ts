@@ -242,13 +242,15 @@ window.addEventListener("keydown", (event) => {
 });
 
 // The star count on the GitHub button, when the API answers (it allows 60
-// unauthenticated requests an hour per visitor)
+// unauthenticated requests an hour per visitor). Hidden below a threshold: a
+// small number reads as a lack of traction rather than as social proof.
+const MIN_STARS_SHOWN = 50;
 const stars = element("stars");
 fetch("https://api.github.com/repos/thibautlfr/steerkit")
 	.then((response) => (response.ok ? response.json() : undefined))
 	.then((repo?: { stargazers_count?: number }) => {
 		const count = repo?.stargazers_count;
-		if (count === undefined) return;
+		if (count === undefined || count < MIN_STARS_SHOWN) return;
 		stars.textContent =
 			count >= 1000 ? `${(count / 1000).toFixed(1)}k` : String(count);
 		stars.hidden = false;
