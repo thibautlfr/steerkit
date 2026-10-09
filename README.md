@@ -6,7 +6,8 @@ objects. `seek`, `arrive`, `wander` and `keepAway` by name, instead of
 anonymous vector maths rewritten in every project.
 
 - **Engine-agnostic.** Any `{ x, y, z }` is a vector: plain objects,
-  `THREE.Vector3` as it is, your engine's own. No dependency.
+  `THREE.Vector3` as it is, your engine's own. No dependency; an optional
+  `steerkit/three` adapter turns, instances and debugs Three.js models.
 - **No allocation per frame.** Every behavior writes into a vector you pass
   and returns it.
 - **Small.** 4.1 kB for everything (minified and brotlied), tree-shakable:
@@ -50,7 +51,8 @@ step(fairy, force, dt);
 ```
 
 With Three.js, `position` can be the mesh's own `mesh.position`: `step`
-moves it directly.
+moves it directly, and [`steerkit/three`](#threejs) turns it to face its
+way.
 
 ## How it works
 
@@ -107,6 +109,9 @@ return. `out` may be any of the inputs.
 | `step(agent, force, dt, { overspeedDamping? }?)` | Moves the agent under `force` for `dt` seconds. |
 | `createGrid({ cellSize, plane? })`, `updateGrid(grid, agents)` | A spatial grid, sorted once per frame, to find neighbors fast. |
 | `queryGrid(grid, position, radius, out)` | The agents within `radius`, into a list from `createNeighbors()`. |
+| `faceVelocity(object, velocity, dt, { turnRate?, minSpeed? }?)` | From `steerkit/three`: turns a Three.js object toward its velocity, smoothly. |
+| `setInstances(mesh, agents, { up?, minSpeed? }?)` | From `steerkit/three`: a crowd's positions and headings into an `InstancedMesh`. |
+| `new SteeringHelper({ capacity?, seconds?, headLength?, colors? }?)` | From `steerkit/three`: draws the forces and shapes, for debugging. |
 
 `pursue`, `evade`, `follow`, `offsetPursuit` and `avoidCollisions` take
 any `{ position, velocity }`, another agent included. `lookAhead` is in
@@ -285,10 +290,52 @@ step(fairy, force, dt, { overspeedDamping: 0.5 });
 The force can still turn the agent meanwhile, just not speed it up past the
 fading limit.
 
+### Three.js
+
+The vectors already fit, and an agent can lend its mesh's `position`. The
+optional `steerkit/three` adapter does the rest. It needs `three` (0.152 or
+later) installed, and adds 2.6 kB, three not counted:
+
+- `faceVelocity` turns an object toward its velocity, upright along
+  `object.up`, as smoothly at any framerate.
+- `setInstances` writes a crowd's positions and headings into an
+  `InstancedMesh`: hundreds of agents, one draw call.
+- `SteeringHelper` draws the forces as the demos do, and spheres, circles,
+  boxes and paths for obstacles, zones, bounds and roads, in one draw call.
+
+```ts
+import * as THREE from "three";
+import { faceVelocity, SteeringHelper, setInstances } from "steerkit/three";
+
+// A school of fish, facing +z, in one draw call
+const fish = new THREE.InstancedMesh(geometry, material, school.length);
+fish.frustumCulled = false; // three doesn't follow moving instances
+const helper = new SteeringHelper(); // the forces, for debugging
+scene.add(fish, sharkMesh, helper);
+
+// Every frame, once the agents have moved
+setInstances(fish, school);
+faceVelocity(sharkMesh, shark.velocity, dt, { turnRate: 4 });
+helper.reset();
+helper.vectors(school[0], forces[0]);
+helper.sphere(rock.position, rock.radius);
+```
+
+Models face +z, as with `lookAt`: rotate the geometry once if yours faces
+elsewhere. Instances live in the mesh's space, so keep the mesh at the
+origin; at a stop, an instance keeps its heading. The helper holds 4,096
+line segments (19 for an agent's vectors) unless given a `capacity`, and
+leaves out what doesn't fit; its lines are a pixel wide, and
+`helper.material.depthTest = false` draws them over the meshes. None of the
+three allocates per frame. The
+[aquarium](https://steerkit.thibaut-lefrancois.com/aquarium/) puts them
+together.
+
 ### Good to know
 
-- **Orientation is yours.** steerkit moves a point; turn your model to face
-  its velocity, e.g. in Three.js `mesh.lookAt(tmp.copy(position).add(velocity))`.
+- **Orientation is yours**, outside Three.js: steerkit moves a point; turn
+  your model to face its velocity. In Three.js, `faceVelocity` and
+  `setInstances` do it.
 - **Clamp `dt`.** A frame after a tab was in the background can last
   seconds: bound it before calling `step` (`Math.min(dt, 1 / 20)`).
 - **Randomness.** `createWanderState(random)` takes any generator in
@@ -306,7 +353,8 @@ the objects you already have, and stays out of the rest.
 
 ## Roadmap
 
-- **0.4**: a `steerkit/three` adapter with debug helpers to draw the forces.
+Nothing planned past 0.4 yet: open an issue for the behavior or the
+adapter your project needs.
 
 ## References
 

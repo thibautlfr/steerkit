@@ -18,12 +18,13 @@ the number of behaviors.
 packages/steerkit/   # the published npm package
   src/               # types, vec (internal helpers), basic, prediction, wander,
                      # neighbors, grid, leader, avoid, bounds, path, flow,
-                     # combine, step
+                     # combine, step; three (the steerkit/three adapter)
   test/              # unit, props (fast-check), alloc, readme
   bench/crowd.ts     # 1,000 agents, boids and avoiders, plain Node
 apps/docs/           # demos site, Vite + Canvas 2D, private, deployed to GitHub Pages
   src/pages.ts       # every page's title, summary, meta description and prompt goal
   src/demos/         # one scene per behavior
+  src/three/         # the Three.js demos' scenes, loaded on their page only
   build/site.ts      # Vite plugin: one prerendered page per demo, sitemap, robots
   build/llms.ts      # llms.txt, its API section generated from the library's sources
   images/            # HTML sources of og.png and apple-touch-icon.png (`pnpm -F docs images`)
@@ -51,8 +52,9 @@ pnpm -F docs dev                # demos, aliased to the library's sources
 ## Design rules (don't break them)
 
 - **Structural vectors.** Any `{ x, y, z }`; `THREE.Vector3` passes as is. No
-  runtime dependency, ever; Three.js only in a future optional `/three`
-  subpath.
+  runtime dependency, ever; Three.js only in `src/three.ts`, the
+  `steerkit/three` subpath (three as an optional peer). The core never
+  imports it.
 - **Reynolds' canonical model.** `Agent = { position, velocity, maxSpeed,
   maxForce, mass? }`, `dt` in seconds everywhere.
 - **Pure functions writing into `out`.** `out` is the last argument and is
@@ -87,6 +89,16 @@ pnpm -F docs dev                # demos, aliased to the library's sources
   if they run the code the way a frame does: the bench is the second check.
   The amount depends on when V8 compiles in the background
   (`--no-concurrent-recompilation` hides it): bench with the default flags.
+- The same boxing hides in ternaries and reused variables: in
+  `SteeringHelper`, a ternary picking between a field and a computed number
+  (`Math.min` fixed it); in `setInstances`, rebuilding a stopped agent's
+  rotation from the matrix. Private helpers of the class take vertex
+  indices, never fractional numbers. Profile with
+  `HeapProfiler.startSampling` (collected objects included) to find which
+  function allocates.
+- Vite's alias for `steerkit` is a regex: a plain key would also catch
+  `steerkit/three`. `canvas { display: block }` overrides `hidden`, hence
+  `canvas[hidden]`.
 - pnpm 11 refuses dependencies published less than a day ago
   (`minimumReleaseAge`): pin an older version rather than adding an
   exclusion.

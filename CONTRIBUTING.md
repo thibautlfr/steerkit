@@ -19,10 +19,12 @@ pnpm -F docs dev     # the demos, served from the library's sources
 ```
 packages/steerkit/   # the published library
   src/               # one file per family: basic, prediction, wander,
-                     # neighbors, grid, leader, combine, step
+                     # neighbors, grid, leader, avoid, bounds, path, flow,
+                     # combine, step; three is the steerkit/three adapter
   test/              # unit, property, allocation and README tests
   bench/             # the 1,000-agent and 1,000-boid baselines
 apps/docs/           # the demos site (Vite + Canvas 2D), not published
+  src/three/         # the Three.js demos, loaded on their page only
 ```
 
 ## Checks
