@@ -1,0 +1,109 @@
+<!doctype html>
+<!-- The link preview image (1200×630): `pnpm -F docs images` renders it to public/og.png -->
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<title>steerkit link preview</title>
+		<style>
+			html,
+			body {
+				margin: 0;
+				width: 1200px;
+				height: 630px;
+				overflow: hidden;
+				background: #15171c;
+				color: #e8e6e1;
+				font-family:
+					system-ui,
+					-apple-system,
+					"Segoe UI",
+					sans-serif;
+			}
+			.text {
+				position: absolute;
+				left: 80px;
+				top: 120px;
+				width: 600px;
+			}
+			.brand {
+				display: flex;
+				align-items: center;
+				gap: 22px;
+			}
+			.brand svg {
+				width: 84px;
+				height: 84px;
+			}
+			h1 {
+				margin: 0;
+				font-size: 88px;
+				letter-spacing: -0.03em;
+			}
+			p {
+				margin: 36px 0 0;
+				font-size: 36px;
+				line-height: 1.3;
+				color: #c9c7c1;
+			}
+			.behaviors {
+				margin-top: 48px;
+				font:
+					26px/1.5 ui-monospace,
+					"SF Mono",
+					Menlo,
+					monospace;
+				color: #8aa2ff;
+			}
+			.art {
+				position: absolute;
+				right: 0;
+				top: 0;
+			}
+		</style>
+	</head>
+	<body>
+		<svg class="art" width="560" height="630" viewBox="0 0 560 630" aria-hidden="true">
+			<defs>
+				<marker id="blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+					<path d="M0 0 10 5 0 10Z" fill="#6b9cff" />
+				</marker>
+				<marker id="green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+					<path d="M0 0 10 5 0 10Z" fill="#4cc995" />
+				</marker>
+				<marker id="orange" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+					<path d="M0 0 10 5 0 10Z" fill="#ff8a5c" />
+				</marker>
+			</defs>
+			<!-- Trails -->
+			<g fill="none" stroke="rgba(232,230,225,0.16)" stroke-width="4" stroke-linecap="round">
+				<path d="M40 560 C 120 470, 140 380, 230 360" />
+				<path d="M60 160 C 150 210, 200 120, 300 170 S 420 260, 470 220" />
+				<path d="M120 610 C 240 560, 330 600, 420 520" />
+			</g>
+			<!-- The target and its slowing circle -->
+			<circle cx="420" cy="260" r="110" fill="rgba(240,117,182,0.08)" stroke="#f075b6" stroke-width="3" stroke-dasharray="10 9" />
+			<circle cx="420" cy="260" r="16" fill="none" stroke="#f075b6" stroke-width="4" />
+			<circle cx="420" cy="260" r="5" fill="#f075b6" />
+			<!-- Reynolds' diagram: velocity, desired velocity, steering force -->
+			<line x1="230" y1="360" x2="372" y2="292" stroke="#4cc995" stroke-width="5" stroke-dasharray="12 9" marker-end="url(#green)" />
+			<line x1="230" y1="360" x2="356" y2="388" stroke="#6b9cff" stroke-width="6" marker-end="url(#blue)" />
+			<line x1="356" y1="388" x2="368" y2="300" stroke="#ff8a5c" stroke-width="6" marker-end="url(#orange)" />
+			<path d="M0 0 -30 22 -18 0 -30 -22Z" transform="translate(240 362) rotate(12)" fill="#e8e6e1" />
+			<!-- Other agents -->
+			<path d="M0 0 -22 16 -13 0 -22 -16Z" transform="translate(470 220) rotate(-35)" fill="#a0a4ae" />
+			<path d="M0 0 -22 16 -13 0 -22 -16Z" transform="translate(420 520) rotate(-40)" fill="#a0a4ae" />
+		</svg>
+
+		<div class="text">
+			<div class="brand">
+				<svg viewBox="0 0 32 32" aria-hidden="true">
+					<rect width="32" height="32" rx="8" fill="#8aa2ff" />
+					<path d="M24 16 10 23.5l3.5-7.5L10 8.5Z" fill="#15171c" />
+				</svg>
+				<h1>steerkit</h1>
+			</div>
+			<p>Craig Reynolds' steering behaviors for JavaScript and Three.js</p>
+			<div class="behaviors">seek · arrive · wander<br />pursue · evade · keepAway</div>
+		</div>
+	</body>
+</html>

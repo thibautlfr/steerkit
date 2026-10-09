@@ -1,0 +1,89 @@
+name: Release
+
+# On main, two steps. While changesets are pending, Changesets opens (or
+# updates) a "chore: release" pull request: version bump + CHANGELOG. Once it
+# is merged, the new version is published to npm with provenance, in the
+# `npm` environment, which waits for the maintainer's approval.
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    outputs:
+      publish: ${{ steps.changesets.outputs.hasChangesets == 'false' && steps.npm.outputs.published == 'false' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # Before Changesets switches to its release branch: is the version on
+      # main already on npm?
+      - name: Is this version on npm?
+        id: npm
+        run: |
+          version=$(node -p "require('./packages/steerkit/package.json').version")
+          if npm view "steerkit@$version" version > /dev/null 2>&1; then
+            echo "published=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "published=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Open or update the release pull request
+        id: changesets
+        uses: changesets/action@v1
+        with:
+          version: pnpm changeset version
+          commit: "chore: release"
+          title: "chore: release"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  publish:
+    needs: version
+    if: needs.version.outputs.publish == 'true'
+    runs-on: ubuntu-latest
+    # Waits for the maintainer's approval; npm's trusted publisher is tied to
+    # this environment
+    environment: npm
+    permissions:
+      contents: write
+      # npm trusted publishing (OIDC) and provenance
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm build
+
+      - name: Publish to npm, tag and create the GitHub release
+        uses: changesets/action@v1
+        with:
+          publish: pnpm changeset publish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_CONFIG_PROVENANCE: "true"

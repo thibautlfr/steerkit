@@ -7,3 +7,7 @@ coverage
 .vscode/*
 !.vscode/extensions.json
 .idea
+
+# Copied from the root on pack (see the prepack script)
+/packages/steerkit/README.md
+/packages/steerkit/LICENSE
