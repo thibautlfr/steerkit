@@ -44,6 +44,7 @@ export {
 	type NeighborhoodOptions,
 	separation,
 } from "./neighbors.ts";
+export { type FollowPathOptions, followPath } from "./path.ts";
 export { evade, type PredictionOptions, pursue } from "./prediction.ts";
 export { type StepOptions, step } from "./step.ts";
 export type {

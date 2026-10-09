@@ -17,6 +17,7 @@ import {
 	evade,
 	flee,
 	follow,
+	followPath,
 	keepAway,
 	offsetPursuit,
 	prioritize,
@@ -142,6 +143,24 @@ const behaviors = (
 			agent,
 			{ min: target, max: other },
 			{ margin: distance, lookAhead: Math.abs(distance) },
+			{ x: 0, y: 0, z: 0 },
+		),
+		followPath(
+			agent,
+			[target, other, agent.position, target],
+			{ radius: distance, lookAhead: Math.abs(distance) },
+			{ x: 0, y: 0, z: 0 },
+		),
+		followPath(
+			agent,
+			[target, other],
+			{ radius: distance, lookAhead: distance, closed: true },
+			{ x: 0, y: 0, z: 0 },
+		),
+		followPath(
+			agent,
+			[other],
+			{ radius: distance, lookAhead: Math.abs(distance) },
 			{ x: 0, y: 0, z: 0 },
 		),
 	];
