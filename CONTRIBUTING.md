@@ -70,13 +70,25 @@ against, not a CI gate: timings are too noisy for that.
   reads all its inputs before writing (so `out` may alias any of them), and
   allocates nothing.
 
+## How a contribution lands
+
+1. Open an issue first for anything beyond a small fix, to agree on the
+   change before writing it.
+2. Fork the repository, branch off `develop`, and open a pull request
+   against `develop`. Add a changeset if the published package changes.
+3. The CI runs on the pull request (the maintainer approves the first run of
+   a new contributor's workflows). It must pass.
+4. The maintainer reviews and merges. Only the maintainer can merge, and
+   releases are published from `main` only.
+
 ## Commits and branches
 
 - [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/):
   `feat: add separation`, `fix(step): …`, `docs: …`.
-- `main` holds releases, `develop` the work in progress. Branch off
-  `develop` (`feat/…`, `fix/…`, `chore/…`) and open the pull request
-  against it; nothing is committed to `main` or `develop` directly.
+- `main` holds releases, `develop` the work in progress. Both are protected:
+  no direct push, no force push, no deletion; changes land through pull
+  requests only, and `develop` requires a green CI. Branch off `develop`
+  (`feat/…`, `fix/…`, `chore/…`, `docs/…`).
 
 ## Releasing
 
