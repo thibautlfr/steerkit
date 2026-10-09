@@ -17,6 +17,11 @@ anonymous vector maths rewritten in every project.
 **[Interactive demos](https://steerkit.thibaut-lefrancois.com)**: one per
 behavior, with the forces drawn and sliders for every parameter.
 
+**Working with a coding agent?** Each demo has a "Copy prompt" button that
+asks your agent to bring that behavior into your project, and the agent-ready
+documentation lives at
+[steerkit.thibaut-lefrancois.com/llms.txt](https://steerkit.thibaut-lefrancois.com/llms.txt).
+
 ## Install
 
 ```sh

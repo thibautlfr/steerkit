@@ -20,7 +20,16 @@ packages/steerkit/   # the published npm package
   test/              # unit, props (fast-check), alloc, readme
   bench/crowd.ts     # 1,000 agents, plain Node
 apps/docs/           # demos site, Vite + Canvas 2D, private, deployed to GitHub Pages
+  src/pages.ts       # every page's title, summary, meta description and prompt goal
+  src/demos/         # one scene per behavior
+  build/site.ts      # Vite plugin: one prerendered page per demo, sitemap, robots
+  build/llms.ts      # llms.txt, its API section generated from the library's sources
+  images/            # HTML sources of og.png and apple-touch-icon.png (`pnpm -F docs images`)
 ```
+
+The site lives at https://steerkit.thibaut-lefrancois.com, one URL per demo
+(`/arrive/`). A new demo needs an entry in `src/pages.ts`: it then gets its
+page, its sitemap entry, its line in llms.txt and its "Copy prompt".
 
 ## Commands
 
