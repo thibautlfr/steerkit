@@ -5,8 +5,10 @@ import fc from "fast-check";
 import { describe, expect, it } from "vitest";
 import {
 	type Agent,
+	alignment,
 	arrive,
 	brake,
+	cohesion,
 	createWanderState,
 	evade,
 	flee,
@@ -14,6 +16,7 @@ import {
 	prioritize,
 	pursue,
 	seek,
+	separation,
 	step,
 	type Vec3,
 	wander,
@@ -51,6 +54,9 @@ const behaviors = (
 	distance: number,
 ): Vec3[] => {
 	const mover = { position: target, velocity: other };
+	// The agent itself included, as a whole crowd would be
+	const crowd = [agent, mover, { position: other, velocity: target }];
+	const seen = { radius: distance, fieldOfView: Math.abs(distance) };
 	return [
 		seek(agent, target, { x: 0, y: 0, z: 0 }),
 		flee(agent, target, { x: 0, y: 0, z: 0 }),
@@ -64,6 +70,10 @@ const behaviors = (
 			{ maxPrediction: Math.abs(distance) },
 			{ x: 0, y: 0, z: 0 },
 		),
+		separation(agent, crowd, { radius: distance }, { x: 0, y: 0, z: 0 }),
+		separation(agent, crowd, seen, { x: 0, y: 0, z: 0 }),
+		cohesion(agent, crowd, seen, { x: 0, y: 0, z: 0 }),
+		alignment(agent, crowd, seen, { x: 0, y: 0, z: 0 }),
 	];
 };
 

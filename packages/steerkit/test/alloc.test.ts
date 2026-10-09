@@ -8,15 +8,18 @@ import { describe, expect, it } from "vitest";
 import {
 	add,
 	addWithin,
+	alignment,
 	arrive,
 	blend,
 	brake,
+	cohesion,
 	createWanderState,
 	evade,
 	flee,
 	keepAway,
 	pursue,
 	seek,
+	separation,
 	step,
 	wander,
 	zero,
@@ -58,6 +61,12 @@ describe.runIf(allocated() !== undefined)("allocation", () => {
 	const quarry = { position: vec(5, 1, 2), velocity: vec(0, 1, 0) };
 	const state = createWanderState(seeded(1));
 	const target = vec(5, 0, 0);
+	const crowd = [
+		a,
+		quarry,
+		{ position: vec(0.5, 0.5, 0), velocity: vec(1, 0, 0) },
+	];
+	const seen = { radius: 10, fieldOfView: 4 };
 	const force = vec();
 	const tmp = vec();
 
@@ -71,6 +80,9 @@ describe.runIf(allocated() !== undefined)("allocation", () => {
 		["evade", () => evade(a, quarry, {}, force)],
 		// With a seeded random: V8's Math.random allocates on its own
 		["wander", () => wander(a, state, wandering, 0.016, force)],
+		["separation", () => separation(a, crowd, seen, force)],
+		["cohesion", () => cohesion(a, crowd, seen, force)],
+		["alignment", () => alignment(a, crowd, seen, force)],
 		["zero + add", () => add(zero(force), target, 2)],
 		["addWithin", () => addWithin(zero(force), 3, target)],
 		["step", () => step(a, force, 0.016, soft)],
