@@ -1,5 +1,14 @@
 # steerkit
 
+## 0.4.0
+
+### Minor Changes
+
+- 1d974cb: `separation` and `cohesion` no longer push at full strength whatever the distances. `separation` fades out as `keepAway` does, as the nearest neighbor nears the edge of `radius`, so a neighbor coming into sight doesn't jolt. `cohesion` is a pull toward the center of the neighbors, harder the farther it is (`maxSpeed` at `radius`), instead of a seek: agents no longer overshoot the center and circle it forever, and a tight school no longer trembles. Cohesion is weaker in the middle of a group: a weight about twice as high gives the old grouping.
+- 55ea66e: Add `steerkit/three`, an optional Three.js adapter (`three` as an optional peer dependency), starting with `faceVelocity`: turns an object to face its velocity as `lookAt` does, +z forward and upright along `object.up`, smoothed by a turn rate the same at any framerate.
+- 55ea66e: Add `SteeringHelper` to `steerkit/three`: draws the forces for debugging in one draw call, Reynolds' diagram of an agent (velocity, desired velocity, steering force) as in the demos, and circles, spheres, boxes and paths for zones, obstacles, walls and roads.
+- 55ea66e: Add `setInstances` to `steerkit/three`: draws a crowd in one call, writing each agent's position and an orientation facing its velocity into the matrices of an `InstancedMesh`, without allocating.
+
 ## 0.3.0
 
 ### Minor Changes
