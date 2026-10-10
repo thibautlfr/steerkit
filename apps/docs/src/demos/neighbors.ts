@@ -202,7 +202,7 @@ export const cohesionDemo = groupDemo({
 	id: "cohesion",
 	name: "cohesion",
 	behavior: cohesion,
-	weight: 1.5,
+	weight: 3,
 	radius: 2,
 	fieldOfView: 360,
 	start: "spread",

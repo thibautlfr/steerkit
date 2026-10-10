@@ -1,4 +1,5 @@
-import type { Demo, Param, Values } from "./demo.ts";
+import type { Demo, Demo3D, Param, Player, Values } from "./demo.ts";
+import { aquariumDemo } from "./demos/aquarium.ts";
 import {
 	collisionAvoidanceDemo,
 	obstacleAvoidanceDemo,
@@ -24,7 +25,7 @@ import { highlight } from "./highlight.ts";
 import { home, neighbors, SITE } from "./pages.ts";
 import { Stage } from "./stage.ts";
 
-const demos: Demo[] = [
+const demos: (Demo | Demo3D)[] = [
 	seekDemo,
 	fleeDemo,
 	arriveDemo,
@@ -45,6 +46,7 @@ const demos: Demo[] = [
 	flowFieldDemo,
 	combineDemo,
 	speedLimitDemo,
+	aquariumDemo,
 ];
 
 const element = <T extends HTMLElement>(id: string): T => {
@@ -64,10 +66,12 @@ const summary = element("summary");
 const hint = element("hint");
 const form = element<HTMLFormElement>("params");
 const code = element("code");
-const stage = new Stage(element<HTMLCanvasElement>("canvas"));
+const canvas = element<HTMLCanvasElement>("canvas");
+const canvas3d = element<HTMLCanvasElement>("canvas-3d");
+const stage = new Stage(canvas);
 
 // The demo in the address (/arrive/), or the first one on the home page
-const current = (): { demo: Demo; isHome: boolean } => {
+const current = (): { demo: Demo | Demo3D; isHome: boolean } => {
 	const id = location.pathname.split("/").filter(Boolean)[0];
 	const demo = demos.find((d) => d.id === id);
 	return demo ? { demo, isHome: false } : { demo: seekDemo, isHome: true };
@@ -82,7 +86,7 @@ if (legacy) history.replaceState(null, "", `/${legacy.id}/`);
 const setMeta = (selector: string, attribute: string, value: string) => {
 	document.querySelector(selector)?.setAttribute(attribute, value);
 };
-const updateHead = (demo: Demo, isHome: boolean) => {
+const updateHead = (demo: Demo | Demo3D, isHome: boolean) => {
 	const pageTitle = isHome
 		? home.title
 		: `${demo.title}, interactive demo · steerkit`;
@@ -135,11 +139,19 @@ const control = (param: Param, values: Values, onChange: () => void) => {
 };
 
 let values: Values = {};
-let shown: Demo = seekDemo;
+let shown: Demo | Demo3D = seekDemo;
+// The 3D demo playing, and a count of the demos shown, so a 3D demo that
+// finishes loading after the reader moved on doesn't start
+let player: Player | undefined;
+let showing = 0;
+let vectorsOn = true;
 
 const show = () => {
 	const { demo, isHome } = current();
 	shown = demo;
+	const token = ++showing;
+	player?.stop();
+	player = undefined;
 
 	for (const link of list.querySelectorAll("a")) {
 		if (link.pathname === `/${demo.id}/`) {
@@ -171,7 +183,28 @@ const show = () => {
 	};
 	form.replaceChildren(...demo.params.map((p) => control(p, values, render)));
 	render();
-	stage.play(demo.create(stage.world), values);
+
+	canvas.hidden = "load" in demo;
+	canvas3d.hidden = !("load" in demo);
+	if (!("load" in demo)) {
+		stage.resize();
+		stage.play(demo.create(stage.world), values);
+		return;
+	}
+	stage.stop();
+	hint.textContent = "Loading Three.js…";
+	const playing = values;
+	demo
+		.load()
+		.then(({ play }) => {
+			if (token !== showing) return;
+			hint.textContent = demo.hint;
+			player = play(canvas3d, playing);
+			player.vectors = vectorsOn;
+		})
+		.catch(() => {
+			if (token === showing) hint.textContent = "Three.js failed to load";
+		});
 };
 
 // Moving between demos without reloading the page
@@ -222,7 +255,7 @@ const copy = async (text: string, what: string) => {
 };
 
 const prompt = (
-	demo: Demo,
+	demo: Demo | Demo3D,
 ): string => `I want to use steerkit (the npm package "steerkit") in this project: Craig Reynolds' steering behaviors as small, typed functions that work on the project's own { x, y, z } vectors, THREE.Vector3 included.
 
 Goal: ${demo.goal}.
@@ -250,7 +283,9 @@ element("copy-prompt").addEventListener("click", () =>
 const toggle = element<HTMLButtonElement>("vectors");
 const legend = document.querySelector<HTMLElement>(".legend");
 const showVectors = (on: boolean) => {
+	vectorsOn = on;
 	stage.vectors = on;
+	if (player) player.vectors = on;
 	toggle.setAttribute("aria-pressed", String(on));
 	toggle.textContent = on ? "Hide forces" : "Show forces";
 	if (legend) legend.hidden = !on;

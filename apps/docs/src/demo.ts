@@ -41,6 +41,26 @@ export type Demo = Page & {
 	create: (world: World) => Scene;
 };
 
+/** A 3D demo, once loaded: it runs its own frame loop. */
+export type Player = {
+	/** Whether the forces are drawn. */
+	vectors: boolean;
+	stop: () => void;
+};
+
+/**
+ * A Three.js demo, loaded on demand so the other pages don't download
+ * three. Its sliders write into `values`, which it reads every frame.
+ */
+export type Demo3D = Page & {
+	hint: string;
+	params: Param[];
+	code: (values: Values) => string;
+	load: () => Promise<{
+		play: (canvas: HTMLCanvasElement, values: Values) => Player;
+	}>;
+};
+
 export const vec = (x = 0, y = 0, z = 0): Vec3 => ({ x, y, z });
 
 // Rounds a slider value for display in code

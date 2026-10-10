@@ -4,6 +4,7 @@
 // JIT has optimized it, is what the loop allocates.
 
 import v8 from "node:v8";
+import * as THREE from "three";
 import { describe, expect, it } from "vitest";
 import {
 	add,
@@ -35,6 +36,7 @@ import {
 	wander,
 	zero,
 } from "../src/index.ts";
+import { faceVelocity, SteeringHelper, setInstances } from "../src/three.ts";
 import { agent, seeded, vec } from "./helpers.ts";
 
 const allocated = (): number | undefined =>
@@ -213,6 +215,57 @@ describe.runIf(allocated() !== undefined)("allocation", () => {
 			);
 			addWithin(force, member.maxForce, followPath(member, road, along, tmp));
 			step(member, force, 0.016);
+		};
+		expect(bytesPerCall(frame)).toBeLessThan(NO_OBJECT);
+	});
+
+	it("faceVelocity allocates nothing", () => {
+		const fish = new THREE.Object3D();
+		const velocity = vec(1, 0, 0);
+		const turning = { turnRate: 4 };
+		const frame = (i: number) => {
+			velocity.z = Math.sin(i);
+			faceVelocity(fish, velocity, 0.016, turning);
+		};
+		expect(bytesPerCall(frame)).toBeLessThan(NONE);
+	});
+
+	it("setInstances allocates nothing", () => {
+		const random = seeded(5);
+		const school = Array.from({ length: 50 }, () =>
+			agent({
+				position: vec(random() * 20, random() * 20, random() * 20),
+				velocity: vec(random() - 0.5, random() - 0.5, random() - 0.5),
+			}),
+		);
+		const mesh = new THREE.InstancedMesh(
+			new THREE.BufferGeometry(),
+			new THREE.MeshBasicMaterial(),
+			school.length,
+		);
+		const upright = { up: vec(0, 0, 1) };
+		const frame = (i: number) => {
+			const fish = school[i % school.length] as (typeof school)[number];
+			// One fish stops now and then, for the other branch
+			fish.velocity.x = i % 7 === 0 ? 0 : Math.sin(i);
+			fish.velocity.y = i % 7 === 0 ? 0 : fish.velocity.y;
+			fish.velocity.z = i % 7 === 0 ? 0 : fish.velocity.z;
+			setInstances(mesh, school, upright);
+		};
+		expect(bytesPerCall(frame) / school.length).toBeLessThan(NONE);
+	});
+
+	it("a whole debug frame allocates no vector, array or object", () => {
+		const helper = new SteeringHelper();
+		const tank = { min: vec(-5, -5, -5), max: vec(5, 5, 5) };
+		const frame = (i: number) => {
+			target.x = Math.sin(i);
+			helper.reset();
+			helper.box(tank);
+			helper.vectors(a, target);
+			helper.sphere(quarry.position, 0.5 + (i % 3));
+			helper.circle(target, 1.5, "xy");
+			helper.path(road, true);
 		};
 		expect(bytesPerCall(frame)).toBeLessThan(NO_OBJECT);
 	});

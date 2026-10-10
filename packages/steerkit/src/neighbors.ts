@@ -43,6 +43,10 @@ const react = (
 			? -1
 			: Math.cos(Math.max(fieldOfView, 0) / 2);
 	let count = 0;
+	// How close the nearest neighbor is, 1 − d / radius, for separation's
+	// falloff. Not the distance itself: started at radius, a parameter, V8
+	// boxed it
+	let closest = 0;
 	let x = 0;
 	let y = 0;
 	let z = 0;
@@ -70,6 +74,8 @@ const react = (
 			if (d === 0) continue;
 			// The unit direction away, then over d: never squares a tiny distance
 			count++;
+			const closeness = 1 - d / radius;
+			if (closeness > closest) closest = closeness;
 			x -= dx / d / d;
 			y -= dy / d / d;
 			z -= dz / d / d;
@@ -84,19 +90,37 @@ const react = (
 	}
 	if (count === 0 || (x === 0 && y === 0 && z === 0 && kind === SEPARATION))
 		return set(out, 0, 0, 0);
-	if (kind === COHESION)
-		return desire(agent, x - p.x, y - p.y, z - p.z, agent.maxSpeed, out);
-	const desired =
-		kind === ALIGNMENT
-			? Math.min(norm(x, y, z), agent.maxSpeed)
-			: agent.maxSpeed;
-	return desire(agent, x, y, z, desired, out);
+	if (kind === COHESION) {
+		// A pull toward the center, maxSpeed at the radius. The offset over
+		// the radius is at most 1, the center of neighbors within the radius
+		// being within it too: divided first, it stays finite for any radius
+		if (!(radius > 0)) return set(out, 0, 0, 0);
+		const s = agent.maxSpeed;
+		return set(
+			out,
+			((x - p.x) / radius) * s,
+			((y - p.y) / radius) * s,
+			((z - p.z) / radius) * s,
+		);
+	}
+	if (kind === SEPARATION) {
+		// Flee's force, scaled as keepAway scales it, in locals: through
+		// desire, V8 would box its numbers once a large frame has spent its
+		// inlining budget
+		const l = norm(x, y, z);
+		const s = l > 0 ? agent.maxSpeed / l : 0;
+		const k = closest;
+		return set(out, (x * s - v.x) * k, (y * s - v.y) * k, (z * s - v.z) * k);
+	}
+	return desire(agent, x, y, z, Math.min(norm(x, y, z), agent.maxSpeed), out);
 };
 
 /**
  * Steer away from the neighbors, harder from the nearest: each one pushes
  * along the line between them, weighted by 1/distance, and the agent flees
- * the sum at full speed. Zero force when no neighbor is in sight.
+ * the sum, as keepAway flees a point: harder the closer the nearest one,
+ * fading to nothing at `radius`, so a neighbor coming into sight doesn't
+ * jolt. Zero force when no neighbor is in sight.
  */
 export function separation(
 	agent: Agent,
@@ -108,8 +132,11 @@ export function separation(
 }
 
 /**
- * Steer toward the center of the neighbors, at full speed: what keeps a
- * flock together. Zero force when no neighbor is in sight.
+ * Steer toward the center of the neighbors, harder the farther it is: none
+ * on the center itself, `maxSpeed` at `radius`. What keeps a flock
+ * together. A pull rather than a seek, as in Reynolds' original boids: it
+ * neither overshoots the center nor slows the agent down, so groups travel
+ * instead of circling it. Zero force when no neighbor is in sight.
  */
 export function cohesion(
 	agent: Agent,

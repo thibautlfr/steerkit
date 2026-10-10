@@ -2,7 +2,7 @@
 // point: the readable form (blend) against the allocation-free one (zero,
 // add). Then 1,000 boids flocking, and 1,000 agents wandering clear of each
 // other, their neighbors found by scanning the whole crowd or by a spatial
-// grid. A baseline to compare changes against, not a gate. Plain Node, not
+// grid. Then the flock again, drawn for Three.js: instances and the forces. A baseline to compare changes against, not a gate. Plain Node, not
 // Vitest, whose module runner adds overhead to every imported call:
 // `pnpm bench`. Each form runs in its own process, as the JIT optimizes the
 // shared functions for whichever runs first.
@@ -10,6 +10,7 @@
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import v8 from "node:v8";
+import { BufferGeometry, InstancedMesh, MeshBasicMaterial } from "three";
 import {
 	type Agent,
 	add,
@@ -32,6 +33,7 @@ import {
 	wander,
 	zero,
 } from "../src/index.ts";
+import { SteeringHelper, setInstances } from "../src/three.ts";
 
 const COUNT = 1_000;
 const FRAMES = 2_000;
@@ -105,6 +107,36 @@ const flock = (useGrid: boolean) => {
 	}
 };
 
+// The flock as a Three.js scene would draw it: one instanced mesh, and
+// Reynolds' diagram for every boid. No renderer: the uploads are three's
+const mesh = new InstancedMesh(
+	new BufferGeometry(),
+	new MeshBasicMaterial(),
+	COUNT,
+);
+const helper = new SteeringHelper({ capacity: COUNT * 19 });
+const forces = boids.map(() => vec());
+
+const drawnFlock = () => {
+	updateGrid(grid, boids);
+	helper.reset();
+	for (let i = 0; i < boids.length; i++) {
+		const boid = boids[i] as Agent;
+		const force = forces[i] as Vec3;
+		const neighbors = queryGrid(grid, boid.position, sight.radius, near);
+		zero(force);
+		add(force, separation(boid, neighbors, close, roam), 1.5);
+		add(force, alignment(boid, neighbors, sight, roam), 1);
+		add(force, cohesion(boid, neighbors, sight, roam), 1);
+		step(boid, force, DT);
+		const p = boid.position;
+		p.x = ((p.x % SIDE) + SIDE) % SIDE;
+		p.y = ((p.y % SIDE) + SIDE) % SIDE;
+		helper.vectors(boid, force);
+	}
+	setInstances(mesh, boids);
+};
+
 // Wandering agents that steer clear of each other, avoidance first. The
 // grid query reaches as far as two agents closing in at top speed get in
 // `lookAhead`, plus their radii
@@ -163,6 +195,7 @@ const frames: Record<string, (members: Member[]) => void> = {
 	"flocking, grid": () => flock(true),
 	"avoiding, whole crowd": () => avoiding(false),
 	"avoiding, grid": () => avoiding(true),
+	"flocking, drawn": drawnFlock,
 };
 
 // Every byte V8 allocated so far (Node ≥ 22.18)
