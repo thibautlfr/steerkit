@@ -108,7 +108,7 @@ export const containmentDemo: Demo = {
 						vec(box.max.x, box.max.y),
 						vec(box.min.x, box.max.y),
 					],
-					d.colors.zone,
+					d.colors.area,
 				);
 				rectangle(d, box.min, box.max, []);
 				rectangle(
@@ -226,7 +226,7 @@ export const pathFollowingDemo: Demo = {
 			draw(d) {
 				// The road: a band as wide as twice the radius, and its spine
 				const { ctx } = d;
-				ctx.strokeStyle = d.colors.zone;
+				ctx.strokeStyle = d.colors.area;
 				ctx.lineWidth = Math.max(options.radius * 2, d.px(1));
 				ctx.lineJoin = "round";
 				ctx.beginPath();

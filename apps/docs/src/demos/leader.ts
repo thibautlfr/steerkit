@@ -131,7 +131,8 @@ export const leaderFollowingDemo: Demo = {
 				}
 				drawLeader(d, leader, trail);
 				followers.forEach((follower, i) => {
-					d.agent(follower);
+					// The first one in focus, with its forces; the others in the crowd's teal
+					d.agent(follower, i === 0 ? d.colors.agent : d.colors.muted);
 					if (i === 0) d.vectors(follower, forces[0] as Vec3);
 				});
 			},
@@ -227,7 +228,8 @@ export const offsetPursuitDemo: Demo = {
 				}
 				drawLeader(d, leader, trail);
 				wingmen.forEach(({ agent, force }, i) => {
-					d.agent(agent);
+					// The first one in focus, with its forces; the others in the crowd's teal
+					d.agent(agent, i === 0 ? d.colors.agent : d.colors.muted);
 					if (i === 0) d.vectors(agent, force);
 				});
 			},
