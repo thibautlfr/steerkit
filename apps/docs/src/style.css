@@ -1,57 +1,30 @@
+/* The art direction of thibaut-lefrancois.com: the sheet of white cells
+   bounded by hairlines on a gray ground. Every value comes from tokens.css,
+   generated from the portfolio (scripts/tokens.mjs). */
+@import "./tokens.css";
+
+/* The demos are drawn on an ink cell, in the shader's palette: ivory for
+   the agent in focus, teal for the many, coral for what acts on it. Read
+   by draw.ts and the aquarium, which says which line takes which */
 :root {
-	--bg: #f7f6f2;
-	--surface: #ffffff;
-	--text: #1d1f24;
-	--muted: #5f6470;
-	--border: #e2e0d8;
-	--accent: #3a5bd9;
-	--agent: #1d1f24;
-	--velocity: #2f6fde;
-	--desired: #1f9d6b;
-	--steering: #e0582b;
-	--target: #b83280;
-	--zone: rgba(184, 50, 128, 0.08);
-	--trail: rgba(29, 31, 36, 0.12);
-	--water: #dcecef;
-	--sand: #d8c49a;
-	--shark: #55606e;
-	--code-bg: #f0eee7;
-	--tok-comment: #8a8f99;
-	--tok-keyword: #a626a4;
-	--tok-string: #3f8a2b;
-	--tok-number: #c2610c;
-	--tok-call: #2f62c9;
-	--tok-key: #b4344d;
-	color-scheme: light;
+	--demo-ground: var(--shader-ink);
+	--demo-deep: var(--shader-deep);
+	--demo-focus: var(--shader-ivory);
+	--demo-many: var(--shader-teal);
+	--demo-acting: var(--shader-coral);
 }
 
-@media (prefers-color-scheme: dark) {
-	:root {
-		--bg: #15171c;
-		--surface: #1c1f26;
-		--text: #e8e6e1;
-		--muted: #a0a4ae;
-		--border: #2c3039;
-		--accent: #8aa2ff;
-		--agent: #e8e6e1;
-		--velocity: #6b9cff;
-		--desired: #4cc995;
-		--steering: #ff8a5c;
-		--target: #f075b6;
-		--zone: rgba(240, 117, 182, 0.1);
-		--trail: rgba(232, 230, 225, 0.14);
-		--water: #10212a;
-		--sand: #4a4234;
-		--shark: #9aa6b4;
-		--code-bg: #23262e;
-		--tok-comment: #7d828c;
-		--tok-keyword: #d18ef0;
-		--tok-string: #98c379;
-		--tok-number: #e5a065;
-		--tok-call: #7aa8ff;
-		--tok-key: #ef8a9a;
-		color-scheme: dark;
-	}
+/* Code reads as in an editor: VS Code's default dark theme (Dark+), the
+   one place the portfolio does not set its own colours either */
+:root {
+	--code-ground: #1e1e1e;
+	--code-text: #d4d4d4;
+	--tok-comment: #6a9955;
+	--tok-keyword: #569cd6;
+	--tok-string: #ce9178;
+	--tok-number: #b5cea8;
+	--tok-call: #dcdcaa;
+	--tok-key: #9cdcfe;
 }
 
 * {
@@ -60,17 +33,59 @@
 
 body {
 	margin: 0;
-	background: var(--bg);
-	color: var(--text);
-	font:
-		16px / 1.5 system-ui,
-		-apple-system,
-		"Segoe UI",
-		sans-serif;
+	padding: var(--layout-gutter);
+	background: var(--color-ground);
+	color: var(--color-text);
+	font-family: var(--font-text);
+	font-size: var(--font-size-step-0);
+	font-weight: var(--font-weight-text);
+	line-height: var(--line-height-text);
+	text-rendering: optimizelegibility;
+	-webkit-font-smoothing: antialiased;
 }
 
+p {
+	text-wrap: pretty;
+}
+
+/* Links are ruled by a teal line at rest; on hover or focus a heavier one
+   is drawn in from the left, and runs out to the right when left */
 a {
-	color: var(--accent);
+	color: inherit;
+	text-decoration: none;
+	background-image:
+		linear-gradient(var(--color-accent) 0 0),
+		linear-gradient(var(--color-accent) 0 0);
+	background-repeat: no-repeat;
+	background-position:
+		var(--link-from, right) bottom,
+		left bottom;
+	background-size:
+		var(--link-draw, 0%) var(--link-drawn, 2px),
+		100% var(--link-rest, 1px);
+	transition: background-size var(--duration-draw) var(--ease-out);
+}
+
+a:hover,
+a:focus-visible {
+	--link-draw: 100%;
+	--link-from: left;
+}
+
+@media (forced-colors: active) {
+	a {
+		text-decoration: underline;
+	}
+}
+
+:focus-visible {
+	outline: var(--focus-ring);
+	outline-offset: var(--focus-offset);
+}
+
+::selection {
+	background: var(--color-selection);
+	color: var(--color-text);
 }
 
 .sr-only {
@@ -82,42 +97,51 @@ a {
 	white-space: nowrap;
 }
 
-.top {
-	border-bottom: 1px solid var(--border);
-	background: var(--surface);
+/* The sheet draws the top and left hairlines, each cell its right and
+   bottom ones, so no hairline is ever doubled */
+.sheet {
+	display: grid;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+	max-width: 96rem;
+	margin: 0 auto;
+	border-top: var(--border-hairline);
+	border-left: var(--border-hairline);
 }
 
-.top-inner {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 1rem;
-	max-width: 76rem;
-	margin: 0 auto;
-	padding: 0.85rem 1.5rem;
+.cell {
+	grid-column: span 12;
+	min-width: 0;
+	padding: var(--space-6);
+	border-right: var(--border-hairline);
+	border-bottom: var(--border-hairline);
+	background: var(--color-surface);
+}
+
+/* The header: the mark, redrawn like the site's favicon, and the name */
+.top {
+	grid-column: span 9;
+	padding-block: var(--space-4);
 }
 
 .brand {
-	display: flex;
+	display: inline-flex;
 	align-items: center;
-	gap: 0.75rem;
-	min-width: 0;
-	color: var(--text);
-	text-decoration: none;
+	gap: var(--space-4);
+	background: none;
 }
 
 .logo {
 	flex: none;
-	width: 2.25rem;
-	height: 2.25rem;
+	width: 2.5rem;
+	height: 2.5rem;
 }
 
 .logo rect {
-	fill: var(--accent);
+	fill: var(--color-text);
 }
 
 .logo path {
-	fill: var(--surface);
+	fill: var(--color-surface);
 }
 
 .brand-text {
@@ -126,141 +150,95 @@ a {
 }
 
 .name {
-	font-weight: 700;
-	font-size: 1.2rem;
-	line-height: 1.2;
-	letter-spacing: -0.01em;
+	font-family: var(--font-title);
+	font-size: var(--font-size-step-2);
+	font-weight: var(--font-weight-title);
+	line-height: var(--line-height-title);
+	letter-spacing: var(--letter-spacing-title);
 }
 
 .tagline {
-	font-size: 0.9rem;
-	line-height: 1.35;
-	color: var(--muted);
+	font-size: var(--font-size-step-minus-1);
+	color: var(--color-text-muted);
 }
 
 .links {
+	grid-column: span 3;
 	display: flex;
-	flex: none;
+	flex-wrap: wrap;
 	align-items: center;
-	gap: 0.6rem;
+	justify-content: flex-end;
+	gap: var(--space-2) var(--space-6);
+	padding-block: var(--space-4);
 }
 
-.links svg {
-	width: 1.15rem;
-	height: 1.15rem;
-	fill: currentColor;
+/* A link that leaves the site ends with an arrow pointing up and out */
+.out {
+	width: 0.6em;
+	height: 0.6em;
+	margin-left: 0.25em;
+	fill: none;
+	stroke: currentColor;
+	stroke-width: 1.5;
+	vertical-align: 0.1em;
 }
 
-.icon-link,
-.github {
-	display: inline-flex;
-	align-items: center;
-	height: 2.25rem;
-	border: 1px solid var(--border);
-	border-radius: 0.5rem;
-	color: var(--text);
-	text-decoration: none;
-	font-size: 0.9rem;
-	font-weight: 600;
-	transition:
-		background-color 0.15s,
-		border-color 0.15s;
-}
-
-.icon-link {
-	justify-content: center;
-	width: 2.25rem;
-}
-
-.icon-link:hover,
-.github:hover {
-	background: var(--bg);
-	border-color: var(--muted);
-}
-
-.github {
-	gap: 0.45rem;
-	padding: 0 0.75rem;
-}
-
-.github .count {
-	margin-left: 0.1rem;
-	padding-left: 0.55rem;
-	border-left: 1px solid var(--border);
-	font-variant-numeric: tabular-nums;
-	color: var(--muted);
-}
-
-.layout {
-	display: grid;
-	grid-template-columns: 13rem minmax(0, 1fr);
-	gap: 2rem;
-	max-width: 76rem;
-	margin: 0 auto;
-	padding: 1.5rem;
+.count {
+	font-family: var(--font-data);
+	font-size: var(--font-size-step-minus-1);
+	color: var(--color-text-muted);
 }
 
 /* The demos by family: a column on wide screens, scrolling on its own when
-   taller than the window. Its height leaves room for the header above it at
-   the top of the page */
+   taller than the window */
+.demos {
+	grid-column: span 3;
+}
+
 .groups {
 	position: sticky;
-	top: 1.5rem;
-	max-height: calc(100vh - 7rem);
+	top: var(--space-6);
+	max-height: calc(100vh - var(--space-12));
 	overflow-y: auto;
 	scrollbar-width: thin;
-	scrollbar-color: var(--border) transparent;
+	scrollbar-color: var(--color-line) transparent;
 }
 
 .group + .group {
-	margin-top: 0.9rem;
-	padding-top: 0.9rem;
-	border-top: 1px solid var(--border);
+	margin-top: var(--space-4);
+	padding-top: var(--space-4);
+	border-top: var(--border-hairline);
 }
 
 .group-title {
-	margin: 0 0 0.4rem;
-	padding: 0 0.75rem;
-	font-size: 0.72rem;
-	font-weight: 700;
-	letter-spacing: 0.08em;
-	text-transform: uppercase;
-	color: var(--text);
+	margin: 0 0 var(--space-2);
+	font-size: var(--font-size-step-minus-1);
+	color: var(--color-text-muted);
 }
 
-/* The demos hang from their family's title, along a rule */
 .group ul {
-	list-style: none;
-	margin: 0 0 0 0.75rem;
+	margin: 0;
 	padding: 0;
-	border-left: 1px solid var(--border);
+	list-style: none;
 }
 
+/* No line at rest: the list is a list of names. The one shown is marked by
+   its line, held */
 .groups a {
-	display: block;
-	margin-left: -1px;
-	padding: 0.2rem 0.75rem;
-	border-left: 2px solid transparent;
-	color: var(--muted);
-	font-size: 0.92rem;
-	text-decoration: none;
-}
-
-.groups a:hover {
-	color: var(--text);
-	border-left-color: var(--muted);
+	--link-rest: 0px;
+	display: inline-block;
+	padding-block: var(--space-1);
 }
 
 .groups a[aria-current="page"] {
-	color: var(--accent);
-	font-weight: 600;
-	border-left-color: var(--accent);
+	--link-rest: 2px;
+	font-weight: var(--font-weight-bold);
 }
 
 /* On narrow screens, one menu and the previous and next demos instead */
 .switcher {
 	display: none;
-	gap: 0.5rem;
+	gap: var(--space-2);
 }
 
 .pick {
@@ -273,26 +251,29 @@ a {
 	content: "";
 	position: absolute;
 	top: 50%;
-	right: 1rem;
+	right: var(--space-4);
 	width: 0.45rem;
 	height: 0.45rem;
 	margin-top: -0.35rem;
-	border: solid var(--muted);
-	border-width: 0 2px 2px 0;
+	border: solid var(--color-text-muted);
+	border-width: 0 1.5px 1.5px 0;
 	transform: rotate(45deg);
 	pointer-events: none;
 }
 
+select {
+	border: var(--border-hairline);
+	border-radius: 0;
+	background: var(--color-surface);
+	color: var(--color-text);
+	font: inherit;
+}
+
 .pick select {
 	width: 100%;
-	height: 2.75rem;
-	padding: 0 2.5rem 0 0.9rem;
-	border: 1px solid var(--border);
-	border-radius: 0.6rem;
-	background: var(--surface);
-	color: var(--text);
-	font: inherit;
-	font-weight: 600;
+	height: var(--tap-size);
+	padding: 0 2.5rem 0 var(--space-3);
+	font-weight: var(--font-weight-strong);
 	appearance: none;
 	cursor: pointer;
 }
@@ -302,12 +283,11 @@ a {
 	flex: none;
 	align-items: center;
 	justify-content: center;
-	width: 2.75rem;
-	height: 2.75rem;
-	border: 1px solid var(--border);
-	border-radius: 0.6rem;
-	background: var(--surface);
-	color: var(--text);
+	width: var(--tap-size);
+	height: var(--tap-size);
+	border: var(--border-hairline);
+	background: none;
+	color: var(--color-text);
 }
 
 .switcher .step svg {
@@ -315,33 +295,46 @@ a {
 	height: 1rem;
 	fill: none;
 	stroke: currentColor;
-	stroke-width: 2;
-	stroke-linecap: round;
-	stroke-linejoin: round;
+	stroke-width: 1.5;
 }
 
 .pick select:hover,
 .switcher .step:hover {
-	border-color: var(--muted);
+	border-color: var(--color-text);
+}
+
+/* The demo: its own cells in the nine columns beside the list */
+.main {
+	grid-column: span 9;
+	display: grid;
+	grid-template-columns: subgrid;
+	align-content: start;
+}
+
+.heading {
+	grid-column: 1 / -1;
 }
 
 h1 {
-	margin: 0 0 0.5rem;
-	font-size: 1.75rem;
+	margin: 0 0 var(--space-3);
+	font-family: var(--font-title);
+	font-size: var(--font-size-step-4);
+	font-weight: var(--font-weight-title);
+	line-height: var(--line-height-title);
+	letter-spacing: var(--letter-spacing-title);
+	text-wrap: balance;
 }
 
 .summary {
-	margin: 0 0 1.25rem;
-	color: var(--muted);
-	max-width: 46rem;
+	max-width: var(--layout-measure-wide);
+	margin: 0;
+	color: var(--color-text-muted);
 }
 
 .stage {
-	position: relative;
-	background: var(--surface);
-	border: 1px solid var(--border);
-	border-radius: 0.75rem;
-	overflow: hidden;
+	grid-column: 1 / -1;
+	padding: 0;
+	background: var(--demo-ground);
 }
 
 canvas {
@@ -361,132 +354,147 @@ canvas[hidden] {
 	cursor: grab;
 }
 
-.legend {
-	position: absolute;
-	top: 0.75rem;
-	left: 0.75rem;
+/* Under the stage, never over it: what the lines mean, what to do, and the
+   switch for the forces */
+.stage-bar {
+	grid-column: 1 / -1;
 	display: flex;
 	flex-wrap: wrap;
-	gap: 0.25rem 0.9rem;
+	align-items: center;
+	gap: var(--space-2) var(--space-6);
+	padding-block: var(--space-3);
+	font-size: var(--font-size-step-minus-1);
+	color: var(--color-text-muted);
+}
+
+.legend {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--space-1) var(--space-4);
 	margin: 0;
 	padding: 0;
 	list-style: none;
-	font-size: 0.8rem;
-	color: var(--muted);
-	pointer-events: none;
-}
-
-.swatch {
-	display: inline-block;
-	width: 0.9rem;
-	height: 3px;
-	margin-right: 0.35rem;
-	vertical-align: middle;
-	border-radius: 2px;
-}
-
-.swatch.velocity {
-	background: var(--velocity);
-}
-
-.swatch.desired {
-	background: var(--desired);
-}
-
-.swatch.steering {
-	background: var(--steering);
-}
-
-.toggle {
-	position: absolute;
-	top: 0.5rem;
-	right: 0.5rem;
-	padding: 0.3rem 0.65rem;
-	border: 1px solid var(--border);
-	border-radius: 0.4rem;
-	background: var(--surface);
-	color: var(--muted);
-	font: inherit;
-	font-size: 0.8rem;
-	cursor: pointer;
-}
-
-.toggle:hover {
-	color: var(--text);
-	border-color: var(--muted);
-}
-
-.toggle[aria-pressed="false"] {
-	color: var(--accent);
-	border-color: var(--accent);
 }
 
 .legend[hidden] {
 	display: none;
 }
 
+.swatch {
+	display: inline-block;
+	width: 1rem;
+	height: 2px;
+	margin-right: var(--space-2);
+	vertical-align: middle;
+}
+
+/* The legend sits on white: the lines are drawn in ink there, the force in
+   coral, as on the ink cell the velocities are ivory */
+.swatch.velocity {
+	background: var(--color-text);
+}
+
+.swatch.desired {
+	background: repeating-linear-gradient(
+		to right,
+		var(--color-text) 0 4px,
+		transparent 4px 7px
+	);
+}
+
+.swatch.steering {
+	height: 3px;
+	background: var(--demo-acting);
+}
+
 .hint {
-	position: absolute;
-	right: 0.75rem;
-	bottom: 0.5rem;
+	flex: 1;
 	margin: 0;
-	font-size: 0.8rem;
-	color: var(--muted);
-	pointer-events: none;
 }
 
-.panel {
-	display: grid;
-	grid-template-columns: minmax(0, 18rem) minmax(0, 1fr);
-	gap: 1.5rem;
-	margin-top: 1.25rem;
+.button {
+	display: inline-flex;
+	align-items: center;
+	min-height: 2.25rem;
+	padding: 0 var(--space-3);
+	border: var(--border-hairline);
+	border-radius: 0;
+	background: var(--color-surface);
+	color: var(--color-text);
+	font: inherit;
+	font-size: var(--font-size-step-minus-1);
+	font-weight: var(--font-weight-strong);
+	cursor: pointer;
+	transition: border-color var(--duration-quick) var(--ease-snap);
 }
 
+.button:hover {
+	border-color: var(--color-text);
+}
+
+.button.primary {
+	border-color: var(--color-text);
+	font-weight: var(--font-weight-bold);
+}
+
+.button.primary:hover {
+	border-color: var(--color-accent);
+}
+
+.button[aria-pressed="false"] {
+	border-color: var(--color-accent);
+	color: var(--color-accent-text);
+}
+
+/* The parameters beside the code, their values set as data */
 .params {
+	grid-column: span 3;
 	display: grid;
-	gap: 0.9rem;
+	gap: var(--space-4);
 	align-content: start;
 }
 
 .param {
 	display: grid;
 	grid-template-columns: 1fr auto;
-	gap: 0.15rem 0.5rem;
-	font-size: 0.9rem;
+	gap: var(--space-1) var(--space-2);
+	font-size: var(--font-size-step-minus-1);
 }
 
 .param output {
+	font-family: var(--font-data);
 	font-variant-numeric: tabular-nums;
-	color: var(--muted);
+	color: var(--color-text-muted);
 }
 
 .param input[type="range"] {
 	grid-column: 1 / -1;
 	width: 100%;
-	accent-color: var(--accent);
+	margin: 0;
+	accent-color: var(--color-link);
 }
 
 .param select {
 	grid-column: 1 / -1;
-	font: inherit;
-	padding: 0.3rem;
+	padding: var(--space-1) var(--space-2);
 }
 
 .code-box {
-	min-width: 0;
-	border-radius: 0.75rem;
-	background: var(--code-bg);
-	overflow: hidden;
+	grid-column: span 6;
+	display: flex;
+	flex-direction: column;
+	padding: 0;
 }
 
 .code-bar {
 	display: flex;
+	flex-wrap: wrap;
 	align-items: center;
-	gap: 0.5rem;
-	padding: 0.5rem 0.6rem 0.5rem 1.25rem;
-	border-bottom: 1px solid var(--border);
-	font-size: 0.8rem;
-	color: var(--muted);
+	gap: var(--space-2);
+	padding: var(--space-3) var(--space-3) var(--space-3) var(--space-6);
+	border-bottom: var(--border-hairline);
+	font-size: var(--font-size-step-minus-1);
+	color: var(--color-text-muted);
 }
 
 .code-label {
@@ -494,63 +502,24 @@ canvas[hidden] {
 }
 
 .copied {
-	color: var(--desired);
-}
-
-.copy {
-	padding: 0.3rem 0.65rem;
-	border: 1px solid var(--border);
-	border-radius: 0.4rem;
-	background: var(--surface);
-	color: var(--text);
-	font: inherit;
-	cursor: pointer;
-}
-
-.copy:hover {
-	border-color: var(--muted);
-}
-
-.copy.primary {
-	border-color: var(--accent);
-	background: var(--accent);
-	color: var(--surface);
-	font-weight: 600;
-}
-
-.copy.primary:hover {
-	filter: brightness(1.1);
-}
-
-.foot {
-	max-width: 76rem;
-	margin: 1rem auto 0;
-	padding: 1.5rem;
-	border-top: 1px solid var(--border);
-	font-size: 0.85rem;
-	color: var(--muted);
-}
-
-.foot p {
-	margin: 0;
+	color: var(--color-accent-text);
 }
 
 .code {
+	flex: 1;
 	margin: 0;
-	padding: 1rem 1.25rem;
+	padding: var(--space-6);
 	overflow-x: auto;
-	font:
-		0.85rem / 1.55 ui-monospace,
-		"SF Mono",
-		Menlo,
-		Consolas,
-		monospace;
+	background: var(--code-ground);
+	color: var(--code-text);
+	font-family: var(--font-code);
+	font-size: var(--font-size-step-minus-1);
+	line-height: var(--line-height-text);
 	tab-size: 2;
 }
 
 .tok-comment {
 	color: var(--tok-comment);
-	font-style: italic;
 }
 
 .tok-keyword {
@@ -573,23 +542,39 @@ canvas[hidden] {
 	color: var(--tok-key);
 }
 
-@media (max-width: 52rem) {
-	.top-inner {
-		padding: 0.75rem 1rem;
+.foot {
+	font-size: var(--font-size-step-minus-1);
+	color: var(--color-text-muted);
+}
+
+.foot p {
+	max-width: var(--layout-measure-wide);
+	margin: 0;
+}
+
+.foot a {
+	color: var(--color-text);
+}
+
+/* The one breakpoint of the art direction */
+@media (max-width: 60rem) {
+	.top,
+	.links,
+	.demos,
+	.main,
+	.params,
+	.code-box {
+		grid-column: 1 / -1;
 	}
 
-	.tagline {
-		font-size: 0.8rem;
+	/* The name and the links read as one cell */
+	.top {
+		border-bottom: 0;
 	}
 
-	.github span:first-of-type {
-		display: none;
-	}
-
-	.layout {
-		grid-template-columns: minmax(0, 1fr);
-		gap: 1rem;
-		padding: 1rem;
+	.links {
+		justify-content: flex-start;
+		padding-top: 0;
 	}
 
 	.groups {
@@ -598,10 +583,6 @@ canvas[hidden] {
 
 	.switcher {
 		display: flex;
-	}
-
-	.panel {
-		grid-template-columns: minmax(0, 1fr);
 	}
 
 	canvas {

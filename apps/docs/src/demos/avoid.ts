@@ -71,7 +71,7 @@ const drawCorridor = (
 			corner(length, radius),
 			corner(0, radius),
 		],
-		d.colors.zone,
+		d.colors.area,
 	);
 };
 
@@ -161,7 +161,7 @@ export const obstacleAvoidanceDemo: Demo = {
 						rock.position,
 						rock.radius,
 						near ? d.colors.steering : d.colors.muted,
-						d.colors.zone,
+						d.colors.area,
 					);
 				}
 				d.target(w.pointer);

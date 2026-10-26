@@ -4,10 +4,12 @@
 	"type": "module",
 	"scripts": {
 		"dev": "vite",
-		"build": "tsc && vite build",
+		"build": "node scripts/tokens.mjs --check && tsc && vite build",
 		"preview": "vite preview",
 		"typecheck": "tsc",
-		"images": "sh images/render.sh"
+		"images": "sh images/render.sh",
+		"tokens": "node scripts/tokens.mjs",
+		"check:tokens": "node scripts/tokens.mjs --check"
 	},
 	"dependencies": {
 		"steerkit": "workspace:*",

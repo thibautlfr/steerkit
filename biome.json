@@ -7,7 +7,7 @@
 	},
 	"files": {
 		"ignoreUnknown": false,
-		"includes": ["**", "!**/CHANGELOG.md"]
+		"includes": ["**", "!**/CHANGELOG.md", "!apps/docs/src/tokens.css"]
 	},
 	"formatter": {
 		"enabled": true,
