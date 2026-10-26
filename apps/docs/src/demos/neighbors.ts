@@ -67,7 +67,7 @@ const drawNeighborhood = (
 		Math.atan2(v.y, v.x),
 		options.fieldOfView ?? Math.PI * 2,
 		d.colors.muted,
-		d.colors.zone,
+		d.colors.area,
 	);
 	for (const other of others) {
 		if (sees(agent, other, options))

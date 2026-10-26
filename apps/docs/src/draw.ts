@@ -7,23 +7,41 @@ type Colors = Record<
 	| "steering"
 	| "target"
 	| "zone"
+	| "area"
 	| "trail"
 	| "muted",
 	string
 >;
 
-const readColors = (): Colors => {
+/** A hex colour with an opacity, for the faint fills and the trails. */
+const faint = (hex: string, alpha: number): string => {
+	const n = Number.parseInt(hex.replace("#", ""), 16);
+	return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${alpha})`;
+};
+
+/**
+ * The demos are drawn on an ink cell in the shader's palette of the art
+ * direction (style.css): ivory for the agent in focus, teal for the many,
+ * coral for what acts on the agent. The velocity it has is ivory and solid,
+ * the velocity it wants ivory and dashed, the steering force between them
+ * coral.
+ */
+export const readColors = (): Colors => {
 	const style = getComputedStyle(document.documentElement);
-	const get = (name: string) => style.getPropertyValue(`--${name}`).trim();
+	const get = (name: string) => style.getPropertyValue(`--demo-${name}`).trim();
+	const focus = get("focus");
+	const many = get("many");
+	const acting = get("acting");
 	return {
-		agent: get("agent"),
-		velocity: get("velocity"),
-		desired: get("desired"),
-		steering: get("steering"),
-		target: get("target"),
-		zone: get("zone"),
-		trail: get("trail"),
-		muted: get("muted"),
+		agent: focus,
+		velocity: focus,
+		desired: focus,
+		steering: acting,
+		target: acting,
+		zone: faint(acting, 0.14),
+		area: faint(many, 0.16),
+		trail: faint(focus, 0.22),
+		muted: many,
 	};
 };
 
@@ -42,12 +60,6 @@ export class Draw {
 
 	constructor(ctx: CanvasRenderingContext2D) {
 		this.ctx = ctx;
-		matchMedia("(prefers-color-scheme: dark)").addEventListener(
-			"change",
-			() => {
-				this.colors = readColors();
-			},
-		);
 	}
 
 	// A line width or size in CSS pixels, in world units
@@ -166,7 +178,7 @@ export class Draw {
 	/** A line of text, its size in CSS pixels. */
 	text(at: Vec3, text: string, color: string, size = 13) {
 		const { ctx } = this;
-		ctx.font = `${this.px(size)}px ui-monospace, SFMono-Regular, Menlo, monospace`;
+		ctx.font = `${this.px(size)}px "Fragment Mono", ui-monospace, monospace`;
 		ctx.fillStyle = color;
 		ctx.textBaseline = "top";
 		ctx.fillText(text, at.x, at.y);

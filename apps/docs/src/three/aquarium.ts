@@ -88,9 +88,10 @@ const sharkTurn = { turnRate: 4 };
 const HUNT_SECONDS = 6;
 const chasing = {};
 
+// The ink cell's palette (style.css), as the 2D demos read it
 const css = (name: string): string =>
 	getComputedStyle(document.documentElement)
-		.getPropertyValue(`--${name}`)
+		.getPropertyValue(`--demo-${name}`)
 		.trim();
 
 const random = (min: number, max: number): number =>
@@ -119,10 +120,10 @@ const sharkModel = (material: Material): Group => {
 export const play = (canvas: HTMLCanvasElement, values: Values): Player => {
 	const stage = stageOf(canvas);
 	const scene = new Scene();
-	const water = new Color(css("water"));
+	const water = new Color(css("ground"));
 	scene.background = water;
 	scene.fog = new Fog(water, 18, 42);
-	scene.add(new HemisphereLight(0xffffff, 0xc2a878, 2.2));
+	scene.add(new HemisphereLight(0xffffff, css("deep"), 2.2));
 	const sun = new DirectionalLight(0xffffff, 1.6);
 	sun.position.set(4, 10, 6);
 	scene.add(sun);
@@ -133,7 +134,7 @@ export const play = (canvas: HTMLCanvasElement, values: Values): Player => {
 	floor.position.y = tank.min.y;
 	scene.add(floor);
 	const stone = new MeshStandardMaterial({
-		color: 0x8a8f99,
+		color: css("deep"),
 		roughness: 0.9,
 		flatShading: true,
 	});
@@ -170,11 +171,10 @@ export const play = (canvas: HTMLCanvasElement, values: Values): Player => {
 	// three computes the bounds of instances once, where they started
 	fish.frustumCulled = false;
 	const tint = new Color();
+	// The school in teal, each fish a little lighter or darker
+	const teal = new Color(css("many"));
 	for (let i = 0; i < MAX_FISH; i++) {
-		fish.setColorAt(
-			i,
-			tint.setHSL(random(0.04, 0.12), 0.85, random(0.5, 0.62)),
-		);
+		fish.setColorAt(i, tint.copy(teal).offsetHSL(0, 0, random(-0.06, 0.06)));
 	}
 	scene.add(fish);
 
@@ -201,22 +201,16 @@ export const play = (canvas: HTMLCanvasElement, values: Values): Player => {
 	helper.renderOrder = 1;
 	scene.add(helper);
 
-	// The page's colors, light or dark
-	const theme = () => {
-		water.set(css("water"));
-		(scene.fog as Fog).color.copy(water);
-		sand.color.set(css("sand"));
-		sharkMaterial.color.set(css("shark"));
-		helper.colors.velocity.set(css("velocity"));
-		helper.colors.desired.set(css("desired"));
-		helper.colors.steering.set(css("steering"));
-		helper.colors.shape.set(css("muted"));
-		fish.setColorAt(0, tint.set(css("target")));
-		if (fish.instanceColor) fish.instanceColor.needsUpdate = true;
-	};
-	theme();
-	const scheme = matchMedia("(prefers-color-scheme: dark)");
-	scheme.addEventListener("change", theme);
+	// The ink cell: the fish in focus in ivory, the shark that acts on the
+	// school in coral, its forces as in the 2D demos
+	sand.color.set(css("deep"));
+	sharkMaterial.color.set(css("acting"));
+	helper.colors.velocity.set(css("focus"));
+	helper.colors.desired.set(css("focus"));
+	helper.colors.steering.set(css("acting"));
+	helper.colors.shape.set(css("many"));
+	fish.setColorAt(0, tint.set(css("focus")));
+	if (fish.instanceColor) fish.instanceColor.needsUpdate = true;
 
 	let cellSize = 0;
 	let grid = createGrid<Agent>({ cellSize: 1 });
@@ -227,7 +221,6 @@ export const play = (canvas: HTMLCanvasElement, values: Values): Player => {
 		vectors: true,
 		stop: () => {
 			stage.stop();
-			scheme.removeEventListener("change", theme);
 			scene.traverse((object) => {
 				if (object instanceof Mesh) {
 					object.geometry.dispose();

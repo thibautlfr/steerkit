@@ -323,8 +323,7 @@ fetch("https://api.github.com/repos/thibautlfr/steerkit")
 	.then((repo?: { stargazers_count?: number }) => {
 		const count = repo?.stargazers_count;
 		if (count === undefined || count < MIN_STARS_SHOWN) return;
-		stars.textContent =
-			count >= 1000 ? `${(count / 1000).toFixed(1)}k` : String(count);
+		stars.textContent = `${count >= 1000 ? `${(count / 1000).toFixed(1)}k` : count} stars`;
 		stars.hidden = false;
 	})
 	.catch(() => {});
