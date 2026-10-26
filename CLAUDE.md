@@ -27,7 +27,8 @@ apps/docs/           # demos site, Vite + Canvas 2D, private, deployed to GitHub
   src/three/         # the Three.js demos' scenes, loaded on their page only
   build/site.ts      # Vite plugin: one prerendered page per demo, sitemap, robots
   build/llms.ts      # llms.txt, its API section generated from the library's sources
-  images/            # HTML sources of og.png and apple-touch-icon.png (`pnpm -F docs images`)
+  images/            # HTML source of apple-touch-icon.png (`pnpm -F docs images`);
+                     # public/og.png is the title card, rendered outside this repository
 ```
 
 The site lives at https://steerkit.thibaut-lefrancois.com, one URL per demo
